@@ -5,34 +5,52 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Period Points</title>
 <style>
-:root{--bg:#f4f7fb;--card:#fff;--line:#dbe3ee;--text:#172033;--muted:#667085;--shadow:0 10px 28px rgba(16,24,40,.08);--blue:#2563eb}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,Arial,sans-serif}
-.wrap{max-width:980px;margin:auto;padding:22px}.topbar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px}
-h1{margin:0;font-size:30px}.sub{margin-top:4px;color:var(--muted);font-size:14px}.actions{display:flex;gap:8px;flex-wrap:wrap}
-button,input,select{font:inherit}.btn{border:1px solid var(--line);background:#fff;border-radius:11px;padding:9px 13px;font-weight:750;cursor:pointer}
-.tabs{display:flex;gap:8px;overflow-x:auto;margin:8px 0 16px}.tab{white-space:nowrap;border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 13px;font-weight:800;cursor:pointer}.tab.active{background:#172033;color:#fff}
-.board{display:flex;flex-direction:column;gap:10px}.row{display:grid;grid-template-columns:44px minmax(0,1fr) 80px 154px;gap:10px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:15px;padding:11px 12px;box-shadow:var(--shadow);transition:.2s}
-.row.bump{transform:scale(1.01);box-shadow:0 14px 36px rgba(37,99,235,.15)}.rank{font-size:21px;font-weight:900;text-align:center}.section{min-width:0}.name{font-size:18px;font-weight:850;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.achievement{display:inline-block;margin-top:4px;padding:3px 7px;border-radius:999px;background:#fff7d6;color:#8a6100;font-size:10px;font-weight:850;white-space:nowrap}
-.scorebox{text-align:right}.score{font-size:25px;font-weight:900}.pending{font-size:10px;color:#b54708;font-weight:800;white-space:nowrap;margin-top:3px}.controls{display:grid;grid-template-columns:42px 42px 62px;gap:6px}
-.scorebtn,.savebtn{height:40px;border-radius:10px;border:1px solid var(--line);font-weight:900;cursor:pointer}.scorebtn{font-size:22px}.minus{background:#fff5f5;color:#b42318}.plus{background:#ecfdf3;color:#027a48}.savebtn{background:#eef4ff;color:#1d4ed8;font-size:13px}.savebtn:disabled{background:#f2f4f7;color:#98a2b3;cursor:default}
-.note{margin-top:14px;color:var(--muted);font-size:12px;text-align:center}
-.modal,.celebrate{position:fixed;inset:0;background:rgba(15,23,42,.46);display:none;align-items:center;justify-content:center;padding:18px;z-index:20}.open{display:flex}.panel{width:min(760px,95vw);max-height:88vh;overflow:auto;background:#fff;border-radius:20px;padding:20px;box-shadow:0 25px 80px rgba(15,23,42,.28)}
+:root{--bg:#f4f7fb;--card:#fff;--line:#dbe3ee;--text:#172033;--muted:#667085;--shadow:0 7px 18px rgba(16,24,40,.07)}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,Arial,sans-serif;overflow:hidden}
+.wrap{max-width:980px;height:100dvh;margin:auto;padding:14px 18px 10px;display:flex;flex-direction:column;min-height:0}
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:10px;flex:0 0 auto}
+h1{margin:0;font-size:27px;line-height:1}.sub{margin-top:3px;color:var(--muted);font-size:12px}
+.actions{display:flex;gap:7px;align-items:center;flex-wrap:nowrap}
+button,input,select{font:inherit}
+.btn{border:1px solid var(--line);background:#fff;border-radius:10px;padding:8px 11px;font-weight:750;cursor:pointer;white-space:nowrap}
+.ensembleBtn{min-width:142px;text-align:center}
+.board{display:grid;gap:6px;flex:1;min-height:0;grid-auto-rows:minmax(0,1fr)}
+.row{display:grid;grid-template-columns:38px minmax(0,1fr) 68px 144px;gap:8px;align-items:center;min-height:0;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:5px 10px;box-shadow:var(--shadow);transition:.2s;overflow:hidden}
+.row.bump{transform:scale(1.008);box-shadow:0 12px 28px rgba(37,99,235,.13)}
+.rank{font-size:18px;font-weight:900;text-align:center}
+.section{display:flex;align-items:center;gap:7px;min-width:0;overflow:hidden}
+.name{font-size:16px;font-weight:850;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.achievement{display:inline-flex;align-items:center;padding:2px 6px;border-radius:999px;background:#fff7d6;color:#8a6100;font-size:9px;font-weight:850;white-space:nowrap;flex:0 1 auto;overflow:hidden;text-overflow:ellipsis}
+.scorebox{text-align:right;min-width:0}.score{font-size:22px;font-weight:900;line-height:1}.pending{font-size:9px;color:#b54708;font-weight:800;white-space:nowrap;margin-top:2px}
+.controls{display:grid;grid-template-columns:38px 38px 58px;gap:5px}
+.scorebtn,.savebtn{height:31px;border-radius:9px;border:1px solid var(--line);font-weight:900;cursor:pointer}
+.scorebtn{font-size:19px}.minus{background:#fff5f5;color:#b42318}.plus{background:#ecfdf3;color:#027a48}.savebtn{background:#eef4ff;color:#1d4ed8;font-size:11px}.savebtn:disabled{background:#f2f4f7;color:#98a2b3;cursor:default}
+.note{margin-top:7px;color:var(--muted);font-size:10px;text-align:center;flex:0 0 auto}
+.modal,.celebrate{position:fixed;inset:0;background:rgba(15,23,42,.46);display:none;align-items:center;justify-content:center;padding:18px;z-index:20}.open{display:flex}
+.panel{width:min(760px,95vw);max-height:88vh;overflow:auto;background:#fff;border-radius:20px;padding:20px;box-shadow:0 25px 80px rgba(15,23,42,.28)}
 .panelhead{display:flex;justify-content:space-between;align-items:center;gap:10px}.setting{padding:14px 0;border-top:1px solid var(--line)}.setting:first-of-type{border-top:none}.setting label{display:block;font-weight:850;margin-bottom:7px}.setting small{color:var(--muted)}
 input[type=text],input[type=time],select{width:100%;padding:10px 11px;border:1px solid var(--line);border-radius:10px}.manage{display:flex;flex-direction:column;gap:8px;margin-top:8px}.manageitem{display:grid;grid-template-columns:1fr auto;gap:8px}.danger{color:#b42318}
 .celebrate-card{width:min(620px,92vw);text-align:center;background:#fff;border-radius:28px;padding:34px 24px;position:relative;overflow:hidden;box-shadow:0 30px 90px rgba(0,0,0,.28)}.celebrate-card h2{font-size:38px;margin:4px 0 8px}.celebrate-card p{font-size:20px;margin:0;color:var(--muted)}.big{font-size:56px}.confetti{position:absolute;inset:0;pointer-events:none}.piece{position:absolute;width:10px;height:18px;border-radius:3px;animation:fall 2.6s linear forwards}@keyframes fall{from{transform:translateY(-80px) rotate(0);opacity:1}to{transform:translateY(560px) rotate(680deg);opacity:0}}
-@media(max-width:700px){.wrap{padding:12px}.topbar{align-items:flex-start;flex-direction:column}.row{grid-template-columns:28px minmax(0,1fr) 52px 126px;gap:6px;padding:8px}.rank{font-size:17px}.name{font-size:14px}.score{font-size:19px}.controls{grid-template-columns:34px 34px 50px;gap:4px}.scorebtn,.savebtn{height:34px}.scorebtn{font-size:18px}.savebtn{font-size:11px}.achievement{font-size:0;padding:0;background:transparent}.achievement:before{content:"✨";font-size:12px}}
-@media(max-width:430px){.row{grid-template-columns:24px minmax(0,1fr) 42px 108px;gap:4px;padding:7px 6px}.rank{font-size:15px}.name{font-size:12px}.score{font-size:16px}.controls{grid-template-columns:30px 30px 42px;gap:3px}.scorebtn,.savebtn{height:30px}.savebtn{font-size:9px;padding:0}.pending{display:none}}
+@media(max-width:700px){
+ .wrap{padding:10px 9px 7px}.topbar{margin-bottom:7px}.topbar .sub{display:none}h1{font-size:22px}.actions{gap:4px}.btn{padding:6px 8px;font-size:11px}.ensembleBtn{min-width:112px}
+ .board{gap:4px}.row{grid-template-columns:25px minmax(0,1fr) 44px 110px;gap:4px;padding:4px 6px;border-radius:10px}.rank{font-size:14px}.section{gap:4px}.name{font-size:12px}.achievement{font-size:8px;padding:1px 4px}.score{font-size:16px}.pending{display:none}.controls{grid-template-columns:30px 30px 42px;gap:3px}.scorebtn,.savebtn{height:27px}.scorebtn{font-size:16px}.savebtn{font-size:9px;padding:0}.note{font-size:9px;margin-top:4px}
+}
+@media(max-height:720px){
+ .wrap{padding-top:8px;padding-bottom:6px}.topbar{margin-bottom:6px}h1{font-size:22px}.sub{display:none}.board{gap:4px}.row{padding-top:3px;padding-bottom:3px}.scorebtn,.savebtn{height:27px}.note{display:none}
+}
 </style>
 </head>
 <body>
 <div class="wrap">
   <div class="topbar">
     <div><h1>Period Points</h1><div class="sub">Positive recognition, section growth, and friendly competition.</div></div>
-    <div class="actions"><button class="btn" onclick="showTrends()">Trends</button><button class="btn" onclick="openSettings()">Settings</button></div>
-  </div>
-  <div class="tabs">
-    <button class="tab active" data-ens="7/8 Grade Band" onclick="switchEns(this)">7th/8th Grade</button>
-    <button class="tab" data-ens="6th Grade Band" onclick="switchEns(this)">6th Grade</button>
+    <div class="actions">
+      <button id="ensembleBtn" class="btn ensembleBtn" onclick="cycleEnsemble()">Ensembles</button>
+      <button class="btn" onclick="showTrends()">Trends</button>
+      <button class="btn" onclick="openSettings()">Settings</button>
+    </div>
   </div>
   <div id="board" class="board"></div>
   <div class="note">Tap + or − to stage a change. Tap Save to commit it and update rankings.</div>
@@ -45,6 +63,7 @@ input[type=text],input[type=time],select{width:100%;padding:10px 11px;border:1px
   <div class="setting"><label>Score Display</label><select id="scoreMode" onchange="render()"><option value="exact">Show Exact Scores</option><option value="rank">Show Rankings Only</option></select></div>
   <div class="setting"><label>History & Trends Window</label><select id="trendWindow"><option>Last 5 rehearsals</option><option>Last 10 rehearsals</option><option>Month</option></select></div>
   <div class="setting"><label>Student Achievements</label><select id="achievements"><option value="on">On — pop-ups, sound & confetti</option><option value="off">Off</option></select></div>
+  <div class="setting"><label>Achievement Metrics</label><button class="btn" onclick="resetAchievementMetrics()">Reset Achievement Metrics</button><small style="display:block;margin-top:6px">Clears current rehearsal achievement counters and banners for this ensemble without changing section scores.</small></div>
   <div class="setting"><label>Daily Email</label><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><select><option>On</option><option>Off</option></select><input type="time" value="13:20"></div><small>Brandon.mcardell@fairport.org · school days only. Backend hookup still pending.</small></div>
   <div class="setting"><label>Score Season</label><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" onclick="resetScores()">Reset Current Scores</button><button class="btn" onclick="archiveSeason()">View / Archive Previous Score Seasons</button></div></div>
 </div></div>
@@ -80,30 +99,43 @@ const defaults={
   ]
 };
 let state=JSON.parse(localStorage.getItem(STORAGE)||'null')||{ensembles:defaults,archives:[]};
+if(!state.ensembles) state={ensembles:defaults,archives:[]};
 let current=Object.keys(state.ensembles)[0];
 let pending={},lastOrder=[];
 function persist(){localStorage.setItem(STORAGE,JSON.stringify(state))}
 function k(name){return current+'::'+name}
 function delta(name){return pending[k(name)]||0}
 function rows(){return [...state.ensembles[current]].sort((a,b)=>b.score-a.score||a.name.localeCompare(b.name))}
+function updateEnsembleButton(){document.getElementById('ensembleBtn').textContent=current}
 function render(){
+ updateEnsembleButton();
  const mode=document.getElementById('scoreMode')?.value||'exact',board=document.getElementById('board'),r=rows();board.innerHTML='';
+ board.style.gridTemplateRows='repeat('+Math.max(r.length,1)+',minmax(0,1fr))';
  r.forEach((s,i)=>{const d=delta(s.name),shown=Math.max(0,s.score+d),el=document.createElement('div');el.className='row';el.dataset.name=s.name;
  el.innerHTML='<div class="rank">'+(i+1)+'</div><div class="section"><div class="name">'+s.name+'</div>'+(s.achievement?'<div class="achievement">✨ '+s.achievement+'</div>':'')+'</div><div class="scorebox"><div class="score">'+(mode==='exact'?shown:'#'+(i+1))+'</div>'+(d?'<div class="pending">'+(d>0?'+':'')+d+' pending</div>':'')+'</div><div class="controls"><button class="scorebtn minus" onclick="stage(\''+s.name+'\',-1)">−</button><button class="scorebtn plus" onclick="stage(\''+s.name+'\',1)">+</button><button class="savebtn" '+(!d?'disabled':'')+' onclick="commit(\''+s.name+'\')">Save</button></div>';board.appendChild(el)});
  const now=r.map(x=>x.name);if(lastOrder.length)now.forEach(n=>{if(lastOrder.indexOf(n)!==now.indexOf(n)){const el=[...document.querySelectorAll('.row')].find(x=>x.dataset.name===n);if(el){el.classList.add('bump');setTimeout(()=>el.classList.remove('bump'),400)}}});lastOrder=now;
 }
+function cycleEnsemble(){
+ const names=Object.keys(state.ensembles);if(names.length<2)return;
+ const i=names.indexOf(current);current=names[(i+1)%names.length];pending={};lastOrder=[];render();
+}
 function stage(name,amount){const key=k(name),s=state.ensembles[current].find(x=>x.name===name);pending[key]=(pending[key]||0)+amount;if(s.score+pending[key]<0)pending[key]=-s.score;render()}
-function commit(name){const key=k(name),d=pending[key]||0;if(!d)return;const s=state.ensembles[current].find(x=>x.name===name);s.score=Math.max(0,s.score+d);s.today+=d;delete pending[key];if(d>0&&document.getElementById('achievements').value!=='off'){if(s.today===3){s.achievement='3-day positive streak';celebrate(name,'3-Day Positive Streak')}else if(s.today>=4){s.achievement='Best rehearsal yet';celebrate(name,'Best Rehearsal Yet')}}persist();render()}
-function switchEns(btn){document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));btn.classList.add('active');current=btn.dataset.ens;lastOrder=[];render()}
+function commit(name){const key=k(name),d=pending[key]||0;if(!d)return;const s=state.ensembles[current].find(x=>x.name===name);s.score=Math.max(0,s.score+d);s.today=(s.today||0)+d;delete pending[key];if(d>0&&document.getElementById('achievements').value!=='off'){if(s.today===3){s.achievement='3-day positive streak';celebrate(name,'3-Day Positive Streak')}else if(s.today>=4){s.achievement='Best rehearsal yet';celebrate(name,'Best Rehearsal Yet')}}persist();render()}
 function openSettings(){document.getElementById('ensembleName').value=current;renderManage();document.getElementById('settings').classList.add('open')}
-function closeSettings(){const n=document.getElementById('ensembleName').value.trim();if(n&&n!==current){state.ensembles[n]=state.ensembles[current];delete state.ensembles[current];document.querySelector('.tab.active').dataset.ens=n;document.querySelector('.tab.active').textContent=n.replace(' Band','');current=n}persist();render();document.getElementById('settings').classList.remove('open')}
+function closeSettings(){const n=document.getElementById('ensembleName').value.trim();if(n&&n!==current){state.ensembles[n]=state.ensembles[current];delete state.ensembles[current];current=n}persist();render();document.getElementById('settings').classList.remove('open')}
 function renderManage(){const c=document.getElementById('manageSections');c.innerHTML='';state.ensembles[current].forEach((s,i)=>{const x=document.createElement('div');x.className='manageitem';x.innerHTML='<input type="text" value="'+s.name.replace(/"/g,'&quot;')+'" onchange="renameSection('+i+',this.value)"><button class="btn danger" onclick="deleteSection('+i+')">Delete</button>';c.appendChild(x)})}
 function renameSection(i,v){state.ensembles[current][i].name=v.trim()||state.ensembles[current][i].name;persist();renderManage();render()}
 function deleteSection(i){if(confirm('Remove this section?')){state.ensembles[current].splice(i,1);persist();renderManage();render()}}
 function addSection(){const n=prompt('New section name');if(!n)return;state.ensembles[current].push({name:n.trim(),score:0,today:0,achievement:''});persist();renderManage();render()}
+function resetAchievementMetrics(){
+ if(!confirm('Reset achievement metrics for '+current+'? Scores will stay exactly the same.'))return;
+ state.ensembles[current].forEach(s=>{s.today=0;s.achievement=''});
+ persist();render();
+ alert('Achievement metrics reset. Section scores were not changed.');
+}
 function resetScores(){if(confirm('Reset current scores? This version will archive them first.')){state.archives.push({ensemble:current,date:new Date().toISOString(),scores:JSON.parse(JSON.stringify(state.ensembles[current]))});state.ensembles[current].forEach(s=>{s.score=0;s.today=0;s.achievement=''}) ;pending={};persist();render()}}
 function archiveSeason(){alert(state.archives.length?state.archives.length+' archived score season(s) saved in this browser.':'No archived seasons yet.')}
-function showTrends(){const r=rows();let h='';r.forEach(s=>h+='<div style="display:grid;grid-template-columns:1fr auto;gap:12px;padding:12px;border:1px solid #dbe3ee;border-radius:12px;margin-bottom:8px"><div><strong>'+s.name+'</strong><div style="color:#667085;font-size:13px">'+(s.today>1?'↑ gaining momentum':s.today===0?'→ no points today':'→ steady')+'</div></div><div style="font-weight:900">'+(s.today>=0?'+':'')+s.today+'</div></div>');h+='<div style="margin-top:14px;padding:14px;border-radius:14px;background:#fff7d6"><strong>Worth watching:</strong> '+(r[r.length-1]?.name||'—')+' has received the fewest positive recognitions recently. Consider listening intentionally for an authentic opportunity to celebrate progress.</div>';document.getElementById('trendBody').innerHTML=h;document.getElementById('trends').classList.add('open')}
+function showTrends(){const r=rows();let h='';r.forEach(s=>h+='<div style="display:grid;grid-template-columns:1fr auto;gap:12px;padding:12px;border:1px solid #dbe3ee;border-radius:12px;margin-bottom:8px"><div><strong>'+s.name+'</strong><div style="color:#667085;font-size:13px">'+((s.today||0)>1?'↑ gaining momentum':(s.today||0)===0?'→ no points today':'→ steady')+'</div></div><div style="font-weight:900">'+((s.today||0)>=0?'+':'')+(s.today||0)+'</div></div>');h+='<div style="margin-top:14px;padding:14px;border-radius:14px;background:#fff7d6"><strong>Worth watching:</strong> '+(r[r.length-1]?.name||'—')+' has received the fewest positive recognitions recently. Consider listening intentionally for an authentic opportunity to celebrate progress.</div>';document.getElementById('trendBody').innerHTML=h;document.getElementById('trends').classList.add('open')}
 function closeTrends(){document.getElementById('trends').classList.remove('open')}
 function celebrate(name,text){document.getElementById('celebrateTitle').textContent=name+'!';document.getElementById('celebrateText').textContent=text;const c=document.getElementById('confetti');c.innerHTML='';const colors=['#2563eb','#f59e0b','#ef4444','#10b981','#8b5cf6','#ec4899'];for(let i=0;i<70;i++){const p=document.createElement('span');p.className='piece';p.style.left=Math.random()*100+'%';p.style.top=(-50-Math.random()*250)+'px';p.style.background=colors[Math.floor(Math.random()*colors.length)];p.style.animationDelay=Math.random()*.8+'s';c.appendChild(p)}document.getElementById('celebrate').classList.add('open');try{const ac=new (window.AudioContext||window.webkitAudioContext)();[523,659,784].forEach((f,i)=>{const o=ac.createOscillator(),g=ac.createGain();o.frequency.value=f;g.gain.setValueAtTime(.05,ac.currentTime+i*.09);g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+.22+i*.09);o.connect(g).connect(ac.destination);o.start(ac.currentTime+i*.09);o.stop(ac.currentTime+.24+i*.09)})}catch(e){}}
 function closeCelebrate(){document.getElementById('celebrate').classList.remove('open')}
