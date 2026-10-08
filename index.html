@@ -16,17 +16,19 @@ h1{margin:0;font-size:27px;line-height:1}.sub{margin-top:3px;color:var(--muted);
 button,input,select{font:inherit}
 .btn{border:1px solid var(--line);background:#fff;border-radius:10px;padding:8px 11px;font-weight:750;cursor:pointer;white-space:nowrap}
 .ensembleBtn{min-width:142px;text-align:center}
+.globalSave{display:none;background:#2563eb;color:#fff;border-color:#2563eb}
+.globalSave.show{display:inline-block}
 .board{display:grid;gap:6px;flex:1;min-height:0;grid-auto-rows:minmax(0,1fr)}
-.row{display:grid;grid-template-columns:38px minmax(0,1fr) 68px 144px;gap:8px;align-items:center;min-height:0;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:5px 10px;box-shadow:var(--shadow);transition:.2s;overflow:hidden}
+.row{display:grid;grid-template-columns:38px minmax(0,1fr) 68px 84px;gap:8px;align-items:center;min-height:0;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:5px 10px;box-shadow:var(--shadow);transition:.2s;overflow:hidden}
 .row.bump{transform:scale(1.008);box-shadow:0 12px 28px rgba(37,99,235,.13)}
 .rank{font-size:18px;font-weight:900;text-align:center}
 .section{display:flex;align-items:center;gap:7px;min-width:0;overflow:hidden}
 .name{font-size:16px;font-weight:850;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
 .achievement{display:inline-flex;align-items:center;padding:2px 6px;border-radius:999px;background:#fff7d6;color:#8a6100;font-size:9px;font-weight:850;white-space:nowrap;flex:0 1 auto;overflow:hidden;text-overflow:ellipsis}
 .scorebox{text-align:right;min-width:0}.score{font-size:22px;font-weight:900;line-height:1}.pending{font-size:9px;color:#b54708;font-weight:800;white-space:nowrap;margin-top:2px}
-.controls{display:grid;grid-template-columns:38px 38px 58px;gap:5px}
-.scorebtn,.savebtn{height:31px;border-radius:9px;border:1px solid var(--line);font-weight:900;cursor:pointer}
-.scorebtn{font-size:19px}.minus{background:#fff5f5;color:#b42318}.plus{background:#ecfdf3;color:#027a48}.savebtn{background:#eef4ff;color:#1d4ed8;font-size:11px}.savebtn:disabled{background:#f2f4f7;color:#98a2b3;cursor:default}
+.controls{display:grid;grid-template-columns:38px 38px;gap:5px}
+.scorebtn{height:31px;border-radius:9px;border:1px solid var(--line);font-weight:900;cursor:pointer;font-size:19px}
+.minus{background:#fff5f5;color:#b42318}.plus{background:#ecfdf3;color:#027a48}
 .note{margin-top:7px;color:var(--muted);font-size:10px;text-align:center;flex:0 0 auto}
 .modal,.celebrate{position:fixed;inset:0;background:rgba(15,23,42,.46);display:none;align-items:center;justify-content:center;padding:18px;z-index:20}.open{display:flex}
 .panel{width:min(760px,95vw);max-height:88vh;overflow:auto;background:#fff;border-radius:20px;padding:20px;box-shadow:0 25px 80px rgba(15,23,42,.28)}
@@ -35,10 +37,10 @@ input[type=text],input[type=time],select{width:100%;padding:10px 11px;border:1px
 .celebrate-card{width:min(620px,92vw);text-align:center;background:#fff;border-radius:28px;padding:34px 24px;position:relative;overflow:hidden;box-shadow:0 30px 90px rgba(0,0,0,.28)}.celebrate-card h2{font-size:38px;margin:4px 0 8px}.celebrate-card p{font-size:20px;margin:0;color:var(--muted)}.big{font-size:56px}.confetti{position:absolute;inset:0;pointer-events:none}.piece{position:absolute;width:10px;height:18px;border-radius:3px;animation:fall 2.6s linear forwards}@keyframes fall{from{transform:translateY(-80px) rotate(0);opacity:1}to{transform:translateY(560px) rotate(680deg);opacity:0}}
 @media(max-width:700px){
  .wrap{padding:10px 9px 7px}.topbar{margin-bottom:7px}.topbar .sub{display:none}h1{font-size:22px}.actions{gap:4px}.btn{padding:6px 8px;font-size:11px}.ensembleBtn{min-width:112px}
- .board{gap:4px}.row{grid-template-columns:25px minmax(0,1fr) 44px 110px;gap:4px;padding:4px 6px;border-radius:10px}.rank{font-size:14px}.section{gap:4px}.name{font-size:12px}.achievement{font-size:8px;padding:1px 4px}.score{font-size:16px}.pending{display:none}.controls{grid-template-columns:30px 30px 42px;gap:3px}.scorebtn,.savebtn{height:27px}.scorebtn{font-size:16px}.savebtn{font-size:9px;padding:0}.note{font-size:9px;margin-top:4px}
+ .board{gap:4px}.row{grid-template-columns:25px minmax(0,1fr) 44px 64px;gap:4px;padding:4px 6px;border-radius:10px}.rank{font-size:14px}.section{gap:4px}.name{font-size:12px}.achievement{font-size:8px;padding:1px 4px}.score{font-size:16px}.pending{display:none}.controls{grid-template-columns:30px 30px;gap:3px}.scorebtn{height:27px;font-size:16px}.note{font-size:9px;margin-top:4px}
 }
 @media(max-height:720px){
- .wrap{padding-top:8px;padding-bottom:6px}.topbar{margin-bottom:6px}h1{font-size:22px}.sub{display:none}.board{gap:4px}.row{padding-top:3px;padding-bottom:3px}.scorebtn,.savebtn{height:27px}.note{display:none}
+ .wrap{padding-top:8px;padding-bottom:6px}.topbar{margin-bottom:6px}h1{font-size:22px}.sub{display:none}.board{gap:4px}.row{padding-top:3px;padding-bottom:3px}.scorebtn{height:27px}.note{display:none}
 }
 </style>
 </head>
@@ -47,13 +49,14 @@ input[type=text],input[type=time],select{width:100%;padding:10px 11px;border:1px
   <div class="topbar">
     <div><h1>Period Points</h1><div class="sub">Positive recognition, section growth, and friendly competition.</div></div>
     <div class="actions">
+      <button id="saveAllBtn" class="btn globalSave" onclick="saveChanges()">Save Changes</button>
       <button id="ensembleBtn" class="btn ensembleBtn" onclick="cycleEnsemble()">Ensembles</button>
       <button class="btn" onclick="showTrends()">Trends</button>
       <button class="btn" onclick="openSettings()">Settings</button>
     </div>
   </div>
   <div id="board" class="board"></div>
-  <div class="note">Tap + or − to stage a change. Tap Save to commit it and update rankings.</div>
+  <div class="note">Tap + or − to stage changes. Save Changes appears when there is something to save.</div>
 </div>
 
 <div id="settings" class="modal"><div class="panel">
@@ -105,22 +108,40 @@ let pending={},lastOrder=[];
 function persist(){localStorage.setItem(STORAGE,JSON.stringify(state))}
 function k(name){return current+'::'+name}
 function delta(name){return pending[k(name)]||0}
+function hasCurrentPending(){return state.ensembles[current].some(s=>delta(s.name)!==0)}
 function rows(){return [...state.ensembles[current]].sort((a,b)=>b.score-a.score||a.name.localeCompare(b.name))}
 function updateEnsembleButton(){document.getElementById('ensembleBtn').textContent=current}
+function updateSaveButton(){document.getElementById('saveAllBtn').classList.toggle('show',hasCurrentPending())}
 function render(){
- updateEnsembleButton();
+ updateEnsembleButton(); updateSaveButton();
  const mode=document.getElementById('scoreMode')?.value||'exact',board=document.getElementById('board'),r=rows();board.innerHTML='';
  board.style.gridTemplateRows='repeat('+Math.max(r.length,1)+',minmax(0,1fr))';
  r.forEach((s,i)=>{const d=delta(s.name),shown=Math.max(0,s.score+d),el=document.createElement('div');el.className='row';el.dataset.name=s.name;
- el.innerHTML='<div class="rank">'+(i+1)+'</div><div class="section"><div class="name">'+s.name+'</div>'+(s.achievement?'<div class="achievement">✨ '+s.achievement+'</div>':'')+'</div><div class="scorebox"><div class="score">'+(mode==='exact'?shown:'#'+(i+1))+'</div>'+(d?'<div class="pending">'+(d>0?'+':'')+d+' pending</div>':'')+'</div><div class="controls"><button class="scorebtn minus" onclick="stage(\''+s.name+'\',-1)">−</button><button class="scorebtn plus" onclick="stage(\''+s.name+'\',1)">+</button><button class="savebtn" '+(!d?'disabled':'')+' onclick="commit(\''+s.name+'\')">Save</button></div>';board.appendChild(el)});
+ el.innerHTML='<div class="rank">'+(i+1)+'</div><div class="section"><div class="name">'+s.name+'</div>'+(s.achievement?'<div class="achievement">✨ '+s.achievement+'</div>':'')+'</div><div class="scorebox"><div class="score">'+(mode==='exact'?shown:'#'+(i+1))+'</div>'+(d?'<div class="pending">'+(d>0?'+':'')+d+' pending</div>':'')+'</div><div class="controls"><button class="scorebtn minus" onclick="stage(\''+s.name+'\',-1)">−</button><button class="scorebtn plus" onclick="stage(\''+s.name+'\',1)">+</button></div>';board.appendChild(el)});
  const now=r.map(x=>x.name);if(lastOrder.length)now.forEach(n=>{if(lastOrder.indexOf(n)!==now.indexOf(n)){const el=[...document.querySelectorAll('.row')].find(x=>x.dataset.name===n);if(el){el.classList.add('bump');setTimeout(()=>el.classList.remove('bump'),400)}}});lastOrder=now;
 }
 function cycleEnsemble(){
+ if(hasCurrentPending() && !confirm('You have unsaved changes for '+current+'. Switch ensembles without saving them?')) return;
  const names=Object.keys(state.ensembles);if(names.length<2)return;
- const i=names.indexOf(current);current=names[(i+1)%names.length];pending={};lastOrder=[];render();
+ const i=names.indexOf(current);current=names[(i+1)%names.length];lastOrder=[];render();
 }
 function stage(name,amount){const key=k(name),s=state.ensembles[current].find(x=>x.name===name);pending[key]=(pending[key]||0)+amount;if(s.score+pending[key]<0)pending[key]=-s.score;render()}
-function commit(name){const key=k(name),d=pending[key]||0;if(!d)return;const s=state.ensembles[current].find(x=>x.name===name);s.score=Math.max(0,s.score+d);s.today=(s.today||0)+d;delete pending[key];if(d>0&&document.getElementById('achievements').value!=='off'){if(s.today===3){s.achievement='3-day positive streak';celebrate(name,'3-Day Positive Streak')}else if(s.today>=4){s.achievement='Best rehearsal yet';celebrate(name,'Best Rehearsal Yet')}}persist();render()}
+function saveChanges(){
+ const celebrations=[];
+ state.ensembles[current].forEach(s=>{
+   const key=k(s.name),d=pending[key]||0;
+   if(!d)return;
+   s.score=Math.max(0,s.score+d);
+   s.today=(s.today||0)+d;
+   delete pending[key];
+   if(d>0&&document.getElementById('achievements').value!=='off'){
+     if(s.today===3){s.achievement='3-day positive streak';celebrations.push([s.name,'3-Day Positive Streak'])}
+     else if(s.today>=4){s.achievement='Best rehearsal yet';celebrations.push([s.name,'Best Rehearsal Yet'])}
+   }
+ });
+ persist();render();
+ if(celebrations.length) celebrate(celebrations[0][0],celebrations[0][1]);
+}
 function openSettings(){document.getElementById('ensembleName').value=current;renderManage();document.getElementById('settings').classList.add('open')}
 function closeSettings(){const n=document.getElementById('ensembleName').value.trim();if(n&&n!==current){state.ensembles[n]=state.ensembles[current];delete state.ensembles[current];current=n}persist();render();document.getElementById('settings').classList.remove('open')}
 function renderManage(){const c=document.getElementById('manageSections');c.innerHTML='';state.ensembles[current].forEach((s,i)=>{const x=document.createElement('div');x.className='manageitem';x.innerHTML='<input type="text" value="'+s.name.replace(/"/g,'&quot;')+'" onchange="renameSection('+i+',this.value)"><button class="btn danger" onclick="deleteSection('+i+')">Delete</button>';c.appendChild(x)})}
