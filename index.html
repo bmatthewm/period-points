@@ -5,207 +5,246 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Period Points</title>
 <style>
-:root{--bg:#f4f7fb;--card:#fff;--line:#dbe3ee;--text:#172033;--muted:#667085;--shadow:0 7px 18px rgba(16,24,40,.07)}
-*{box-sizing:border-box}
-html,body{height:100%}
-body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,Arial,sans-serif;overflow:hidden}
-.wrap{max-width:980px;height:100dvh;margin:auto;padding:14px 18px 10px;display:flex;flex-direction:column;min-height:0}
-.topbar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:10px;flex:0 0 auto}
-h1{margin:0;font-size:27px;line-height:1}.sub{margin-top:3px;color:var(--muted);font-size:12px}
-.actions{display:flex;gap:7px;align-items:center;flex-wrap:nowrap}
-button,input,select{font:inherit}
-.btn{border:1px solid var(--line);background:#fff;border-radius:10px;padding:8px 11px;font-weight:750;cursor:pointer;white-space:nowrap}
-.ensembleBtn{min-width:142px;text-align:center}
-.globalSave{display:none;background:#2563eb;color:#fff;border-color:#2563eb}
-.globalSave.show{display:inline-block}
-.board{display:grid;gap:6px;flex:1;min-height:0;grid-auto-rows:minmax(0,1fr)}
-.row{display:grid;grid-template-columns:38px minmax(0,1fr) 68px 84px;gap:8px;align-items:center;min-height:0;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:5px 10px;box-shadow:var(--shadow);transition:.2s;overflow:hidden}
-.row.bump{transform:scale(1.008);box-shadow:0 12px 28px rgba(37,99,235,.13)}
-.rank{font-size:18px;font-weight:900;text-align:center}
-.section{display:flex;align-items:center;gap:7px;min-width:0;overflow:hidden}
-.name{font-size:16px;font-weight:850;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
-.achievement{display:inline-flex;align-items:center;padding:2px 6px;border-radius:999px;background:#fff7d6;color:#8a6100;font-size:9px;font-weight:850;white-space:nowrap;flex:0 1 auto;overflow:hidden;text-overflow:ellipsis}.fire{font-size:12px;font-weight:900;white-space:nowrap;color:#b54708}.badgecount{font-size:9px;font-weight:850;white-space:nowrap;color:#475467;background:#f2f4f7;border-radius:999px;padding:2px 6px}
-.scorebox{text-align:right;min-width:0}.score{font-size:22px;font-weight:900;line-height:1}.pending{font-size:9px;color:#b54708;font-weight:800;white-space:nowrap;margin-top:2px}
-.controls{display:grid;grid-template-columns:38px 38px;gap:5px}
-.scorebtn{height:31px;border-radius:9px;border:1px solid var(--line);font-weight:900;cursor:pointer;font-size:19px}
-.minus{background:#fff5f5;color:#b42318}.plus{background:#ecfdf3;color:#027a48}
-.note{margin-top:7px;color:var(--muted);font-size:10px;text-align:center;flex:0 0 auto}
-.modal,.celebrate{position:fixed;inset:0;background:rgba(15,23,42,.46);display:none;align-items:center;justify-content:center;padding:18px;z-index:20}.open{display:flex}
+:root{--bg:#f4f7fb;--card:#fff;--line:#dbe3ee;--text:#172033;--muted:#667085;--blue:#2563eb;--green:#027a48;--red:#b42318;--shadow:0 7px 18px rgba(16,24,40,.07)}
+*{box-sizing:border-box}html,body{height:100%}body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,Arial,sans-serif;overflow:hidden}
+.wrap{max-width:980px;height:100dvh;margin:auto;padding:12px 16px 8px;display:flex;flex-direction:column;min-height:0}
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px;flex:0 0 auto}
+h1{margin:0;font-size:27px;line-height:1}.sub{font-size:12px;color:var(--muted);margin-top:3px}
+.actions{display:flex;gap:6px;align-items:center;flex-wrap:nowrap}
+button,input,select{font:inherit}.btn{border:1px solid var(--line);background:#fff;border-radius:10px;padding:8px 11px;font-weight:800;cursor:pointer;white-space:nowrap}
+.btn.primary{background:var(--blue);border-color:var(--blue);color:#fff}.ensembleBtn{min-width:136px;text-align:center}
+.board{display:grid;gap:5px;flex:1;min-height:0;grid-auto-rows:minmax(0,1fr)}
+.row{display:grid;grid-template-columns:36px minmax(0,1fr) 64px 76px;gap:7px;align-items:center;min-height:0;background:#fff;border:1px solid var(--line);border-radius:11px;padding:4px 9px;box-shadow:var(--shadow);transition:transform .45s ease,box-shadow .45s ease,background .2s ease;overflow:hidden}
+.row.editing{background:#fbfdff;border-color:#cbd5e1}.row.bump{transform:scale(1.012);box-shadow:0 13px 30px rgba(37,99,235,.16)}
+.rank{font-size:17px;font-weight:900;text-align:center}.editrank{color:#98a2b3}
+.section{display:flex;align-items:center;gap:6px;min-width:0;overflow:hidden}.name{font-size:15px;font-weight:850;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tag,.fire,.badgecount{font-size:9px;white-space:nowrap;border-radius:999px;padding:2px 6px}.tag{background:#fff7d6;color:#8a6100}.fire{color:#b54708;font-weight:900}.badgecount{background:#f2f4f7;color:#475467;font-weight:850}
+.scorebox{text-align:right}.score{font-size:20px;font-weight:900;line-height:1}.pending{font-size:9px;color:#b54708;font-weight:850;margin-top:2px;white-space:nowrap}
+.controls{display:grid;grid-template-columns:34px 34px;gap:5px}.scorebtn{height:29px;border-radius:9px;border:1px solid var(--line);font-weight:900;cursor:pointer;font-size:18px}.scorebtn:disabled{opacity:.45;cursor:default}
+.minus{background:#fff5f5;color:var(--red)}.plus{background:#ecfdf3;color:var(--green)}
+.note{font-size:9px;color:var(--muted);text-align:center;margin-top:5px;flex:0 0 auto}
+.modal,.celebrate{position:fixed;inset:0;background:rgba(15,23,42,.46);display:none;align-items:center;justify-content:center;padding:16px;z-index:30}.modal.open,.celebrate.open{display:flex}
 .panel{width:min(760px,95vw);max-height:88vh;overflow:auto;background:#fff;border-radius:20px;padding:20px;box-shadow:0 25px 80px rgba(15,23,42,.28)}
 .panelhead{display:flex;justify-content:space-between;align-items:center;gap:10px}.setting{padding:14px 0;border-top:1px solid var(--line)}.setting:first-of-type{border-top:none}.setting label{display:block;font-weight:850;margin-bottom:7px}.setting small{color:var(--muted)}
-input[type=text],input[type=time],select{width:100%;padding:10px 11px;border:1px solid var(--line);border-radius:10px}.manage{display:flex;flex-direction:column;gap:8px;margin-top:8px}.manageitem{display:grid;grid-template-columns:1fr auto;gap:8px}.danger{color:#b42318}
-.celebrate-card{width:min(620px,92vw);text-align:center;background:#fff;border-radius:28px;padding:34px 24px;position:relative;overflow:hidden;box-shadow:0 30px 90px rgba(0,0,0,.28)}.celebrate-card h2{font-size:38px;margin:4px 0 8px}.celebrate-card p{font-size:20px;margin:0;color:var(--muted)}.big{font-size:56px}.confetti{position:absolute;inset:0;pointer-events:none}.piece{position:absolute;width:10px;height:18px;border-radius:3px;animation:fall 2.6s linear forwards}@keyframes fall{from{transform:translateY(-80px) rotate(0);opacity:1}to{transform:translateY(560px) rotate(680deg);opacity:0}}
+input[type=text],select{width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:10px}
+.manage{display:flex;flex-direction:column;gap:7px;margin-top:8px}.manageitem{display:grid;grid-template-columns:34px 1fr auto;gap:7px;align-items:center;padding:6px;border:1px solid var(--line);border-radius:10px;background:#fff}.drag{cursor:grab;text-align:center;font-size:18px;color:#667085;user-select:none}.manageitem.dragging{opacity:.45}.manageitem.over{outline:2px solid #93c5fd}.danger{color:#b42318}
+.celebrate-card{width:min(650px,92vw);text-align:center;background:#fff;border-radius:28px;padding:30px 24px 26px;position:relative;overflow:hidden;box-shadow:0 30px 90px rgba(0,0,0,.28)}
+.newbadge{display:inline-block;background:#eef4ff;color:#1d4ed8;border-radius:999px;padding:5px 10px;font-weight:900;font-size:12px;margin-bottom:8px}.big{font-size:56px}.celebrate-card h2{font-size:34px;margin:3px 0 8px}.celebrate-card p{font-size:18px;margin:0 auto;color:#475467;max-width:540px;line-height:1.4}.confetti{position:absolute;inset:0;pointer-events:none}.piece{position:absolute;width:10px;height:18px;border-radius:3px;animation:fall 2.6s linear forwards}
+@keyframes fall{from{transform:translateY(-80px) rotate(0);opacity:1}to{transform:translateY(560px) rotate(680deg);opacity:0}}
 @media(max-width:700px){
- .wrap{padding:10px 9px 7px}.topbar{margin-bottom:7px}.topbar .sub{display:none}h1{font-size:22px}.actions{gap:4px}.btn{padding:6px 8px;font-size:11px}.ensembleBtn{min-width:112px}
- .board{gap:4px}.row{grid-template-columns:25px minmax(0,1fr) 44px 64px;gap:4px;padding:4px 6px;border-radius:10px}.rank{font-size:14px}.section{gap:4px}.name{font-size:12px}.achievement{font-size:8px;padding:1px 4px}.score{font-size:16px}.pending{display:none}.controls{grid-template-columns:30px 30px;gap:3px}.scorebtn{height:27px;font-size:16px}.note{font-size:9px;margin-top:4px}
+ .wrap{padding:8px}.sub{display:none}h1{font-size:21px}.actions{gap:3px}.btn{padding:6px 7px;font-size:10px}.ensembleBtn{min-width:104px}
+ .board{gap:3px}.row{grid-template-columns:24px minmax(0,1fr) 42px 60px;gap:3px;padding:3px 5px;border-radius:9px}.rank{font-size:13px}.name{font-size:11px}.tag,.fire,.badgecount{font-size:7px;padding:1px 4px}.score{font-size:15px}.pending{display:none}.controls{grid-template-columns:28px 28px;gap:3px}.scorebtn{height:24px;font-size:15px}.note{display:none}
 }
-@media(max-height:720px){
- .wrap{padding-top:8px;padding-bottom:6px}.topbar{margin-bottom:6px}h1{font-size:22px}.sub{display:none}.board{gap:4px}.row{padding-top:3px;padding-bottom:3px}.scorebtn{height:27px}.note{display:none}
-}
+@media(max-height:720px){.wrap{padding-top:7px}.topbar{margin-bottom:4px}.sub{display:none}.board{gap:3px}.row{padding-top:2px;padding-bottom:2px}.note{display:none}}
 </style>
 </head>
 <body>
 <div class="wrap">
   <div class="topbar">
-    <div><h1>Period Points</h1><div class="sub">Positive recognition, section growth, and friendly competition.</div></div>
+    <div><h1>Period Points</h1><div class="sub">Edit to score. Save to rank. Celebrate real achievements.</div></div>
     <div class="actions">
-      <button id="saveAllBtn" class="btn globalSave" onclick="saveChanges()">Save Changes</button>
+      <button id="editSaveBtn" class="btn primary" onclick="toggleEditSave()">Edit</button>
       <button id="ensembleBtn" class="btn ensembleBtn" onclick="cycleEnsemble()">Ensembles</button>
       <button class="btn" onclick="showTrends()">Trends</button>
       <button class="btn" onclick="openSettings()">Settings</button>
     </div>
   </div>
   <div id="board" class="board"></div>
-  <div class="note">Tap + or − to stage changes. Save Changes appears when there is something to save.</div>
+  <div id="note" class="note">Press Edit to lock cards into your instrument order for scoring.</div>
 </div>
 
 <div id="settings" class="modal"><div class="panel">
   <div class="panelhead"><h2>Settings</h2><button class="btn" onclick="closeSettings()">Done</button></div>
   <div class="setting"><label>Manage Ensemble</label><input id="ensembleName" type="text"><small>Rename the current ensemble.</small></div>
-  <div class="setting"><label>Manage Sections</label><div id="manageSections" class="manage"></div><button class="btn" style="margin-top:9px" onclick="addSection()">+ Add Section</button></div>
-  <div class="setting"><label>Score Display</label><select id="scoreMode" onchange="render()"><option value="exact">Show Exact Scores</option><option value="rank">Show Rankings Only</option></select></div>
-  <div class="setting"><label>History & Trends Window</label><select id="trendWindow"><option>Last 5 rehearsals</option><option>Last 10 rehearsals</option><option>Month</option></select></div>
-  <div class="setting"><label>Student Achievements</label><select id="achievements"><option value="on">On — pop-ups, sound & confetti</option><option value="off">Off</option></select></div>
-  <div class="setting"><label>Achievement Metrics</label><button class="btn" onclick="resetAchievementMetrics()">Reset Achievement Metrics</button><small style="display:block;margin-top:6px">Resets today's achievement counters, streaks, banners, and the Best Rehearsal baseline without changing scores or collected badges.</small></div>
-  <div class="setting"><label>Daily Email</label><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><select><option>On</option><option>Off</option></select><input type="time" value="13:20"></div><small>Brandon.mcardell@fairport.org · school days only. Backend hookup still pending.</small></div>
-  <div class="setting"><label>Score Season</label><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" onclick="resetScores()">Reset Current Scores</button><button class="btn" onclick="archiveSeason()">View / Archive Previous Score Seasons</button></div></div>
+  <div class="setting"><label>Manage Sections & Instrument Order</label><small>Drag the ☰ handle to set the fixed order used during Edit Mode.</small><div id="manageSections" class="manage"></div><button class="btn" style="margin-top:9px" onclick="addSection()">+ Add Section</button></div>
+  <div class="setting"><label>Achievement Metrics</label><button class="btn" onclick="resetAchievementMetrics()">Reset Achievement Metrics</button><small style="display:block;margin-top:6px">Resets daily streak/best-rehearsal tracking. Scores and collected season badges stay intact.</small></div>
 </div></div>
 
 <div id="trends" class="modal"><div class="panel">
-  <div class="panelhead"><h2>Trends</h2><button class="btn" onclick="closeTrends()">Done</button></div>
+  <div class="panelhead"><h2>Trends & Badges</h2><button class="btn" onclick="closeTrends()">Done</button></div>
   <div id="trendBody"></div>
 </div></div>
 
 <div id="celebrate" class="celebrate" onclick="closeCelebrate()"><div class="celebrate-card">
-  <div id="confetti" class="confetti"></div><div class="big">🎉</div><h2 id="celebrateTitle"></h2><p id="celebrateText"></p>
-  <div style="margin-top:16px;color:#98a2b3;font-size:13px">Click anywhere to continue</div>
+  <div id="confetti" class="confetti"></div><div id="newBadgeLabel" class="newbadge">NEW BADGE</div><div id="bigEmoji" class="big">🎉</div><h2 id="celebrateTitle"></h2><p id="celebrateText"></p>
+  <div style="margin-top:16px;color:#98a2b3;font-size:12px">Click anywhere to continue</div>
 </div></div>
 
 <script>
 const STORAGE='periodPoints2';
-const defaults={
-  "7/8 Grade Band":[
-    {name:"Trumpet",score:24,today:3,achievement:"3-day streak"},
-    {name:"Clarinet",score:21,today:1,achievement:""},
-    {name:"Low Reeds",score:18,today:3,achievement:"Most improved"},
-    {name:"Flute",score:17,today:2,achievement:""},
-    {name:"Percussion",score:15,today:1,achievement:""},
-    {name:"Trombone",score:10,today:0,achievement:""}
-  ],
-  "6th Grade Band":[
-    {name:"Clarinet",score:19,today:2,achievement:""},
-    {name:"Trumpet",score:18,today:2,achievement:""},
-    {name:"Flute",score:16,today:1,achievement:""},
-    {name:"Low Reeds",score:12,today:2,achievement:"Best rehearsal yet"},
-    {name:"Baritone",score:11,today:1,achievement:""},
-    {name:"Percussion",score:9,today:0,achievement:""}
-  ]
+const fallback={
+ "7/8 Grade Band":[
+  {name:"Flute",score:14},{name:"Oboe",score:10},{name:"Clarinet",score:17},{name:"Alto Sax",score:13},{name:"Low Reeds",score:12},
+  {name:"Horn",score:11},{name:"Trumpet",score:18},{name:"Trombone",score:15},{name:"Baritone",score:9},{name:"Tuba",score:8}
+ ],
+ "6th Grade Band":[
+  {name:"Flute",score:8},{name:"Clarinet",score:11},{name:"Alto Sax",score:9},{name:"Low Reeds",score:7},{name:"Trumpet",score:12},
+  {name:"Trombone",score:6},{name:"Baritone",score:5},{name:"Percussion",score:10}
+ ]
 };
-let state=JSON.parse(localStorage.getItem(STORAGE)||'null')||{ensembles:defaults,archives:[]};
-if(!state.ensembles) state={ensembles:defaults,archives:[]};
-let current=Object.keys(state.ensembles)[0];
-let pending={},pendingHadMinus={},lastOrder=[],celebrationQueue=[];
+let state=JSON.parse(localStorage.getItem(STORAGE)||'null')||{ensembles:fallback,archives:[],lastDailyReset:null};
+if(!state.ensembles)state={ensembles:fallback,archives:[],lastDailyReset:null};
+let current=Object.keys(state.ensembles)[0],editMode=false,pending={},stageStats={},celebrationQueue=[],lastOrder=[];
 function persist(){localStorage.setItem(STORAGE,JSON.stringify(state))}
 function todayKey(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
-function ensureMetrics(){
- const key=todayKey();
- if(!state.lastDailyReset){
-   Object.values(state.ensembles).flat().forEach(s=>{
-     s.bestDailyPositive=Math.max(Number(s.bestDailyPositive||0),Number(s.today||0));
-     s.positiveToday=0;s.today=0;s.fireStreak=0;s.recoveryPoints=0;s.hadMinusToday=false;s.achievement='';
-     s.badges=Array.isArray(s.badges)?s.badges:[];
-     s.positiveDays=Number(s.positiveDays||0);
-   });
-   state.lastDailyReset=key;persist();return;
- }
- if(state.lastDailyReset!==key){
-   Object.values(state.ensembles).flat().forEach(s=>{
-     const prior=Number(s.positiveToday||0);
-     if(prior>0)s.positiveDays=Number(s.positiveDays||0)+1;
-     s.bestDailyPositive=Math.max(Number(s.bestDailyPositive||0),prior);
-     s.positiveToday=0;s.today=0;s.fireStreak=0;s.recoveryPoints=0;s.hadMinusToday=false;s.achievement='';
-     s.badges=Array.isArray(s.badges)?s.badges:[];
-   });
-   state.lastDailyReset=key;persist();
- }
+function initSection(s){
+ s.score=Number(s.score||0);s.today=Number(s.today||0);s.positiveToday=Number(s.positiveToday||0);s.minusToday=Number(s.minusToday||0);
+ s.fireDays=Number(s.fireDays||0);s.bestDailyPositive=Number(s.bestDailyPositive||0);s.badges=Array.isArray(s.badges)?s.badges:[];
+ s.recentPositiveDays=Array.isArray(s.recentPositiveDays)?s.recentPositiveDays:[];s.achievement=s.achievement||'';s.bestCelebratedDate=s.bestCelebratedDate||'';
+ return s;
 }
-function badgeDefinitions(){return[['fire','🔥','On Fire'],['best','⭐','Personal Best'],['climber','🚀','Climber'],['comeback','💪','Comeback'],['consistent','🎵','Consistency']]}
-function awardBadge(s,id){s.badges=Array.isArray(s.badges)?s.badges:[];if(s.badges.includes(id))return false;s.badges.push(id);return true}
-function badgeCount(s){return (Array.isArray(s.badges)?s.badges:[]).length}
-function queueCelebration(name,title,detail){celebrationQueue.push({name,title,detail})}
-function playNextCelebration(){if(!celebrationQueue.length)return;const x=celebrationQueue.shift();celebrate(x.name,x.title+(x.detail?' — '+x.detail:''))}
-function k(name){return current+'::'+name}
-function delta(name){return pending[k(name)]||0}
-function hasCurrentPending(){return state.ensembles[current].some(s=>delta(s.name)!==0)}
-function rows(){return [...state.ensembles[current]].sort((a,b)=>b.score-a.score||a.name.localeCompare(b.name))}
-function updateEnsembleButton(){document.getElementById('ensembleBtn').textContent=current}
-function updateSaveButton(){document.getElementById('saveAllBtn').classList.toggle('show',hasCurrentPending())}
+Object.values(state.ensembles).forEach(a=>a.forEach(initSection));
+
+function ensureDailyReset(){
+ const key=todayKey();if(!state.lastDailyReset){state.lastDailyReset=key;persist();return}
+ if(state.lastDailyReset===key)return;
+ Object.values(state.ensembles).forEach(arr=>{
+   const ensembleHadActivity=arr.some(s=>(s.positiveToday||0)>0||(s.minusToday||0)>0);
+   if(ensembleHadActivity){
+     arr.forEach(s=>{
+       const cleanPositive=(s.positiveToday||0)>0&&(s.minusToday||0)===0;
+       s.recentPositiveDays.push(cleanPositive);if(s.recentPositiveDays.length>6)s.recentPositiveDays=s.recentPositiveDays.slice(-6);
+       s.fireDays=cleanPositive?(s.fireDays||0)+1:0;
+       s.bestDailyPositive=Math.max(Number(s.bestDailyPositive||0),Number(s.positiveToday||0));
+     });
+   }
+   arr.forEach(s=>{s.today=0;s.positiveToday=0;s.minusToday=0;s.achievement='';s.bestCelebratedDate=''});
+ });
+ state.lastDailyReset=key;persist();
+}
+function k(n){return current+'::'+n}
+function delta(n){return pending[k(n)]||0}
+function stats(n){return stageStats[k(n)]||{plus:0,minus:0}}
+function ranked(){return [...state.ensembles[current]].sort((a,b)=>b.score-a.score||a.name.localeCompare(b.name))}
+function rankMap(){const m={};ranked().forEach((s,i)=>m[s.name]=i+1);return m}
+function hasPending(){return state.ensembles[current].some(s=>{const st=stats(s.name);return delta(s.name)!==0||st.plus||st.minus})}
+function displayRows(){return editMode?[...state.ensembles[current]]:ranked()}
 function render(){
- ensureMetrics(); updateEnsembleButton(); updateSaveButton();
- const mode=document.getElementById('scoreMode')?.value||'exact',board=document.getElementById('board'),r=rows();board.innerHTML='';
- board.style.gridTemplateRows='repeat('+Math.max(r.length,1)+',minmax(0,1fr))';
- r.forEach((s,i)=>{const d=delta(s.name),shown=Math.max(0,s.score+d),el=document.createElement('div');el.className='row';el.dataset.name=s.name;
- el.innerHTML='<div class="rank">'+(i+1)+'</div><div class="section"><div class="name">'+s.name+'</div>'+(s.achievement?'<div class="achievement">✨ '+s.achievement+'</div>':'')+'</div><div class="scorebox"><div class="score">'+(mode==='exact'?shown:'#'+(i+1))+'</div>'+(d?'<div class="pending">'+(d>0?'+':'')+d+' pending</div>':'')+'</div><div class="controls"><button class="scorebtn minus" onclick="stage(\''+s.name+'\',-1)">−</button><button class="scorebtn plus" onclick="stage(\''+s.name+'\',1)">+</button></div>';board.appendChild(el)});
- const now=r.map(x=>x.name);if(lastOrder.length)now.forEach(n=>{if(lastOrder.indexOf(n)!==now.indexOf(n)){const el=[...document.querySelectorAll('.row')].find(x=>x.dataset.name===n);if(el){el.classList.add('bump');setTimeout(()=>el.classList.remove('bump'),400)}}});lastOrder=now;
+ ensureDailyReset();
+ document.getElementById('ensembleBtn').textContent=current;
+ document.getElementById('editSaveBtn').textContent=editMode?'Save':'Edit';
+ document.getElementById('note').textContent=editMode?'Cards are locked to your instrument order while you score.':'Press Edit to lock cards into your instrument order for scoring.';
+ const b=document.getElementById('board'),r=displayRows(),ranks=rankMap();b.innerHTML='';b.style.gridTemplateRows='repeat('+Math.max(r.length,1)+',minmax(0,1fr))';
+ r.forEach(s=>{initSection(s);const dd=delta(s.name),shown=Math.max(0,s.score+dd),el=document.createElement('div');el.className='row'+(editMode?' editing':'');el.dataset.name=s.name;
+   const cleanToday=s.positiveToday>0&&s.minusToday===0;const effectiveFire=s.fireDays+(cleanToday?1:0);
+   el.innerHTML='<div class="rank '+(editMode?'editrank':'')+'">'+(editMode?'•':ranks[s.name])+'</div>'+
+   '<div class="section"><div class="name">'+s.name+'</div>'+(s.achievement?'<div class="tag">'+s.achievement+'</div>':'')+(effectiveFire>=2?'<div class="fire">🔥 '+effectiveFire+' days</div>':'')+(s.badges.length?'<div class="badgecount">🏅 '+s.badges.length+'/5</div>':'')+'</div>'+
+   '<div class="scorebox"><div class="score">'+shown+'</div>'+(dd?'<div class="pending">'+(dd>0?'+':'')+dd+' pending</div>':'')+'</div>'+
+   '<div class="controls"><button class="scorebtn minus" '+(!editMode?'disabled':'')+' onclick="stage(\''+s.name+'\',-1)">−</button><button class="scorebtn plus" '+(!editMode?'disabled':'')+' onclick="stage(\''+s.name+'\',1)">+</button></div>';
+   b.appendChild(el);
+ });
+ const now=r.map(x=>x.name);
+ if(lastOrder.length&&!editMode)now.forEach(n=>{if(lastOrder.indexOf(n)!==now.indexOf(n)){const el=[...document.querySelectorAll('.row')].find(x=>x.dataset.name===n);if(el){el.classList.add('bump');setTimeout(()=>el.classList.remove('bump'),650)}}});
+ lastOrder=now;
+}
+function toggleEditSave(){
+ if(!editMode){editMode=true;lastOrder=[];render();return}
+ saveChanges();
 }
 function cycleEnsemble(){
- if(hasCurrentPending() && !confirm('You have unsaved changes for '+current+'. Switch ensembles without saving them?')) return;
- const names=Object.keys(state.ensembles);if(names.length<2)return;
- const i=names.indexOf(current);current=names[(i+1)%names.length];lastOrder=[];render();
+ if(editMode&&hasPending()&&!confirm('You have unsaved changes. Switch ensembles and discard them?'))return;
+ pending={};stageStats={};const names=Object.keys(state.ensembles),i=names.indexOf(current);current=names[(i+1)%names.length];editMode=false;lastOrder=[];render();
 }
-function stage(name,amount){const key=k(name),s=state.ensembles[current].find(x=>x.name===name);pending[key]=(pending[key]||0)+amount;if(amount<0)pendingHadMinus[key]=true;if(s.score+pending[key]<0)pending[key]=-s.score;render()}
+function stage(name,amt){
+ if(!editMode)return;const s=state.ensembles[current].find(x=>x.name===name),key=k(name);
+ pending[key]=(pending[key]||0)+amt;stageStats[key]=stageStats[key]||{plus:0,minus:0};
+ if(amt>0)stageStats[key].plus++;else stageStats[key].minus++;
+ if(s.score+pending[key]<0)pending[key]=-s.score;render();
+}
+function award(s,id){if(s.badges.includes(id))return false;s.badges.push(id);return true}
+function queue(s,emoji,title,why,isNew){celebrationQueue.push({name:s.name,emoji,title,why,isNew})}
+function ordinal(n){if(n%100>=11&&n%100<=13)return n+'th';return n+({1:'st',2:'nd',3:'rd'}[n%10]||'th')}
+function evaluate(s,beforeRank,afterRank,dd,st){
+ const hadMinus=st.minus>0,hadPlus=st.plus>0;
+ s.today+=dd;s.positiveToday+=st.plus;s.minusToday+=st.minus;
+ let banner='';
+ if(hadMinus)s.fireDays=0;
+
+ if(hadMinus&&hadPlus){
+   banner='💪 Comeback';const isNew=award(s,'comeback');
+   queue(s,'💪',isNew?'Comeback Badge!':'Comeback Again!','Lost a point, then earned it back during today’s rehearsal.',isNew);
+ }
+ if(afterRank<beforeRank){
+   banner='🚀 Climber';const isNew=award(s,'climber');
+   queue(s,'🚀',isNew?'Climber Badge!':'Climber Again!','Moved from '+ordinal(beforeRank)+' place to '+ordinal(afterRank)+' place after saving.',isNew);
+ }
+ const cleanToday=s.positiveToday>0&&s.minusToday===0;
+ const effectiveFire=s.fireDays+(cleanToday?1:0);
+ if(effectiveFire>=3){
+   banner='🔥 On Fire';const isNew=award(s,'fire');
+   queue(s,'🔥',isNew?'On Fire Badge!':'On Fire Again!','Earned positive recognition for 3 consecutive rehearsal days with no point deductions.',isNew);
+ }
+ if(s.bestDailyPositive>0&&s.positiveToday>s.bestDailyPositive&&s.bestCelebratedDate!==todayKey()){
+   banner='⭐ Best Rehearsal Yet';s.bestCelebratedDate=todayKey();const isNew=award(s,'best');
+   queue(s,'⭐',isNew?'Best Rehearsal Badge!':'Best Rehearsal Yet!','Earned '+s.positiveToday+' positive point'+(s.positiveToday===1?'':'s')+' today — a new section best.',isNew);
+ }
+ const recent=[...s.recentPositiveDays,cleanToday].slice(-6),positiveCount=recent.filter(Boolean).length;
+ if(recent.length>=5&&positiveCount>=5){
+   banner='🎵 Consistency';const isNew=award(s,'consistent');
+   queue(s,'🎵',isNew?'Consistency Badge!':'Consistency Again!','Earned positive recognition in 5 of the last 6 rehearsal days.',isNew);
+ }
+ s.achievement=banner;
+}
 function saveChanges(){
- ensureMetrics();
- const beforeRanks={};rows().forEach((s,i)=>beforeRanks[s.name]=i+1);
+ ensureDailyReset();
+ const before=rankMap(),changes=[];
  state.ensembles[current].forEach(s=>{
-   const key=k(s.name),d=pending[key]||0,hadMinus=!!pendingHadMinus[key];
-   if(!d&&!hadMinus)return;
-   s.score=Math.max(0,s.score+d);
-   s.today=(s.today||0)+d;
-   s.positiveToday=Number(s.positiveToday||0)+Math.max(d,0);
-   s.badges=Array.isArray(s.badges)?s.badges:[];
-   s.bestDailyPositive=Number(s.bestDailyPositive||0);
-   s.positiveDays=Number(s.positiveDays||0);
-   if(hadMinus||d<0){s.fireStreak=0;s.hadMinusToday=true;s.recoveryPoints=0}
-   else if(d>0){s.fireStreak=Number(s.fireStreak||0)+d;if(s.hadMinusToday)s.recoveryPoints=Number(s.recoveryPoints||0)+d}
-   s.achievement='';
-   if((s.fireStreak||0)>=5){s.achievement='🔥 On Fire';if(awardBadge(s,'fire'))queueCelebration(s.name,'🔥 On Fire','5 positive recognitions without losing a point')}
-   if(s.bestDailyPositive>0 && s.positiveToday>=5 && s.positiveToday>s.bestDailyPositive){s.achievement='⭐ Personal Best';if(awardBadge(s,'best'))queueCelebration(s.name,'⭐ Personal Best','new best rehearsal')}
-   if(s.hadMinusToday && (s.recoveryPoints||0)>=3){s.achievement='💪 Comeback';if(awardBadge(s,'comeback'))queueCelebration(s.name,'💪 Comeback','3 positive points after a setback')}
-   if((s.positiveDays||0)>=4){if(awardBadge(s,'consistent'))queueCelebration(s.name,'🎵 Consistency','positive recognition across 5 rehearsal days')}
-   delete pending[key];delete pendingHadMinus[key];
+   const key=k(s.name),dd=pending[key]||0,st=stageStats[key]||{plus:0,minus:0};
+   if(!dd&&!st.plus&&!st.minus)return;
+   s.score=Math.max(0,s.score+dd);changes.push({s,dd,st});
  });
- rows().forEach((s,i)=>{const before=beforeRanks[s.name]||i+1,afterRank=i+1;if(before-afterRank>=2){s.achievement='🚀 Climber';if(awardBadge(s,'climber'))queueCelebration(s.name,'🚀 Climber','moved up at least 2 places')}});
- persist();render();playNextCelebration();
+ pending={};stageStats={};const after=rankMap();changes.forEach(x=>evaluate(x.s,before[x.s.name],after[x.s.name],x.dd,x.st));
+ persist();editMode=false;lastOrder=state.ensembles[current].map(s=>s.name);render();setTimeout(playNextCelebration,700);
 }
+function playNextCelebration(){
+ if(!celebrationQueue.length)return;const x=celebrationQueue.shift();
+ document.getElementById('bigEmoji').textContent=x.emoji;document.getElementById('celebrateTitle').textContent=x.name+' — '+x.title;document.getElementById('celebrateText').textContent=x.why;
+ document.getElementById('newBadgeLabel').style.display=x.isNew?'inline-block':'none';
+ const c=document.getElementById('confetti');c.innerHTML='';const colors=['#2563eb','#f59e0b','#ef4444','#10b981','#8b5cf6','#ec4899'];
+ for(let i=0;i<65;i++){const p=document.createElement('span');p.className='piece';p.style.left=Math.random()*100+'%';p.style.top=(-50-Math.random()*250)+'px';p.style.background=colors[Math.floor(Math.random()*colors.length)];p.style.animationDelay=Math.random()*.7+'s';c.appendChild(p)}
+ document.getElementById('celebrate').classList.add('open');
+}
+function closeCelebrate(){document.getElementById('celebrate').classList.remove('open');setTimeout(playNextCelebration,170)}
 function openSettings(){document.getElementById('ensembleName').value=current;renderManage();document.getElementById('settings').classList.add('open')}
 function closeSettings(){const n=document.getElementById('ensembleName').value.trim();if(n&&n!==current){state.ensembles[n]=state.ensembles[current];delete state.ensembles[current];current=n}persist();render();document.getElementById('settings').classList.remove('open')}
-function renderManage(){const c=document.getElementById('manageSections');c.innerHTML='';state.ensembles[current].forEach((s,i)=>{const x=document.createElement('div');x.className='manageitem';x.innerHTML='<input type="text" value="'+s.name.replace(/"/g,'&quot;')+'" onchange="renameSection('+i+',this.value)"><button class="btn danger" onclick="deleteSection('+i+')">Delete</button>';c.appendChild(x)})}
+function renderManage(){
+ const c=document.getElementById('manageSections');c.innerHTML='';
+ state.ensembles[current].forEach((s,i)=>{
+   const x=document.createElement('div');x.className='manageitem';x.draggable=true;
+   x.innerHTML='<div class="drag">☰</div><input type="text" value="'+s.name.replace(/"/g,'&quot;')+'" onchange="renameSection('+i+',this.value)"><button class="btn danger" onclick="deleteSection('+i+')">Delete</button>';
+   x.addEventListener('dragstart',()=>x.classList.add('dragging'));x.addEventListener('dragend',()=>{x.classList.remove('dragging');[...c.children].forEach(el=>el.classList.remove('over'))});
+   x.addEventListener('dragover',e=>{e.preventDefault();x.classList.add('over')});x.addEventListener('dragleave',()=>x.classList.remove('over'));
+   x.addEventListener('drop',e=>{e.preventDefault();const from=[...c.children].findIndex(el=>el.classList.contains('dragging')),to=[...c.children].indexOf(x);if(from<0||to<0||from===to)return;const arr=state.ensembles[current],m=arr.splice(from,1)[0];arr.splice(to,0,m);persist();renderManage();render()});
+   c.appendChild(x);
+ });
+}
 function renameSection(i,v){state.ensembles[current][i].name=v.trim()||state.ensembles[current][i].name;persist();renderManage();render()}
 function deleteSection(i){if(confirm('Remove this section?')){state.ensembles[current].splice(i,1);persist();renderManage();render()}}
-function addSection(){const n=prompt('New section name');if(!n)return;state.ensembles[current].push({name:n.trim(),score:0,today:0,achievement:''});persist();renderManage();render()}
+function addSection(){const n=prompt('New section name');if(!n)return;state.ensembles[current].push(initSection({name:n.trim(),score:0}));persist();renderManage();render()}
 function resetAchievementMetrics(){
  if(!confirm('Reset achievement metrics for '+current+'? Scores and collected badges will stay the same.'))return;
- state.ensembles[current].forEach(s=>{s.today=0;s.positiveToday=0;s.fireStreak=0;s.recoveryPoints=0;s.hadMinusToday=false;s.achievement='';s.bestDailyPositive=0});
- state.lastDailyReset=todayKey();persist();render();
- alert('Achievement metrics reset. Scores and collected badges were not changed.');
+ state.ensembles[current].forEach(s=>{s.today=0;s.positiveToday=0;s.minusToday=0;s.fireDays=0;s.bestDailyPositive=0;s.recentPositiveDays=[];s.achievement='';s.bestCelebratedDate=''});
+ state.lastDailyReset=todayKey();persist();render();alert('Achievement metrics reset. Scores and badges were not changed.');
 }
-function resetScores(){if(confirm('Reset current scores? This version will archive them first.')){state.archives.push({ensemble:current,date:new Date().toISOString(),scores:JSON.parse(JSON.stringify(state.ensembles[current]))});state.ensembles[current].forEach(s=>{s.score=0;s.today=0;s.achievement=''}) ;pending={};persist();render()}}
-function archiveSeason(){alert(state.archives.length?state.archives.length+' archived score season(s) saved in this browser.':'No archived seasons yet.')}
 function showTrends(){
- ensureMetrics();
- const r=rows();let h='<div style="margin-bottom:12px;color:#667085;font-size:13px"><strong>Today</strong> · resets automatically at midnight</div>';
- r.forEach(s=>{
-   const badges=badgeDefinitions().map(b=>'<span title="'+b[2]+'" style="opacity:'+((s.badges||[]).includes(b[0])?'1':'.2')+';margin-right:5px">'+b[1]+'</span>').join('');
-   h+='<div style="display:grid;grid-template-columns:1fr auto;gap:12px;padding:12px;border:1px solid #dbe3ee;border-radius:12px;margin-bottom:8px"><div><strong>'+s.name+'</strong><div style="color:#667085;font-size:12px">Today: '+((s.today||0)>=0?'+':'')+(s.today||0)+' · '+((s.fireStreak||0)>=2?'🔥 '+s.fireStreak+' streak':'no active streak')+'</div><div style="margin-top:5px">'+badges+' <span style="font-size:11px;color:#667085">'+badgeCount(s)+'/5 badges</span></div></div><div style="font-weight:900">'+s.score+'</div></div>';
+ ensureDailyReset();
+ const defs=[
+  ['fire','🔥','On Fire','3 consecutive rehearsal days with a positive point; any minus breaks the streak'],
+  ['comeback','💪','Comeback','Lose a point, then earn it back in the same rehearsal'],
+  ['best','⭐','Best Rehearsal','Beat the section’s previous rehearsal best'],
+  ['climber','🚀','Climber','Move up at least one ranking position after Save'],
+  ['consistent','🎵','Consistency','Positive recognition in 5 of the last 6 rehearsal days']
+ ];
+ let h='<div style="margin-bottom:12px;color:#667085;font-size:13px"><strong>Daily metrics reset at midnight.</strong> Collected badges stay for the season.</div>';
+ ranked().forEach(s=>{const icons=defs.map(d=>'<span title="'+d[2]+'" style="opacity:'+(s.badges.includes(d[0])?'1':'.18')+';font-size:20px;margin-right:5px">'+d[1]+'</span>').join('');
+   h+='<div style="padding:11px;border:1px solid #dbe3ee;border-radius:12px;margin-bottom:8px"><div style="display:flex;justify-content:space-between;gap:10px"><strong>'+s.name+'</strong><strong>'+s.score+'</strong></div><div style="margin-top:5px">'+icons+' <span style="font-size:11px;color:#667085">'+s.badges.length+'/5 collected</span></div></div>';
  });
- h+='<div style="margin-top:14px;padding:14px;border-radius:14px;background:#fff7d6"><strong>Badge Bases</strong><br>🔥 On Fire — 5 positive recognitions without a minus<br>⭐ Personal Best — beat a previous rehearsal best with at least 5 positives<br>🚀 Climber — move up at least 2 places after saving<br>💪 Comeback — earn 3 positives after losing a point<br>🎵 Consistency — positive recognition across 5 rehearsal days</div>';
+ h+='<div style="margin-top:14px;padding:14px;border-radius:14px;background:#fff7d6"><strong>Badge Rules</strong><br>'+defs.map(d=>d[1]+' <strong>'+d[2]+'</strong> — '+d[3]).join('<br>')+'</div>';
  document.getElementById('trendBody').innerHTML=h;document.getElementById('trends').classList.add('open');
 }
 function closeTrends(){document.getElementById('trends').classList.remove('open')}
-function celebrate(name,text){document.getElementById('celebrateTitle').textContent=name+'!';document.getElementById('celebrateText').textContent=text;const c=document.getElementById('confetti');c.innerHTML='';const colors=['#2563eb','#f59e0b','#ef4444','#10b981','#8b5cf6','#ec4899'];for(let i=0;i<70;i++){const p=document.createElement('span');p.className='piece';p.style.left=Math.random()*100+'%';p.style.top=(-50-Math.random()*250)+'px';p.style.background=colors[Math.floor(Math.random()*colors.length)];p.style.animationDelay=Math.random()*.8+'s';c.appendChild(p)}document.getElementById('celebrate').classList.add('open');try{const ac=new (window.AudioContext||window.webkitAudioContext)();[523,659,784].forEach((f,i)=>{const o=ac.createOscillator(),g=ac.createGain();o.frequency.value=f;g.gain.setValueAtTime(.05,ac.currentTime+i*.09);g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+.22+i*.09);o.connect(g).connect(ac.destination);o.start(ac.currentTime+i*.09);o.stop(ac.currentTime+.24+i*.09)})}catch(e){}}
-function closeCelebrate(){document.getElementById('celebrate').classList.remove('open');setTimeout(playNextCelebration,180)}
-ensureMetrics();render();setInterval(()=>{const before=state.lastDailyReset;ensureMetrics();if(before!==state.lastDailyReset)render()},60000);document.addEventListener('visibilitychange',()=>{if(!document.hidden){const before=state.lastDailyReset;ensureMetrics();if(before!==state.lastDailyReset)render()}});
+ensureDailyReset();render();setInterval(()=>{const old=state.lastDailyReset;ensureDailyReset();if(old!==state.lastDailyReset)render()},60000);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden){const old=state.lastDailyReset;ensureDailyReset();if(old!==state.lastDailyReset)render()}});
 </script>
 </body>
 </html>
