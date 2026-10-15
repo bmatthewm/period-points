@@ -24,7 +24,7 @@ button,input,select{font:inherit}
 .rank{font-size:18px;font-weight:900;text-align:center}
 .section{display:flex;align-items:center;gap:7px;min-width:0;overflow:hidden}
 .name{font-size:16px;font-weight:850;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
-.achievement{display:inline-flex;align-items:center;padding:2px 6px;border-radius:999px;background:#fff7d6;color:#8a6100;font-size:9px;font-weight:850;white-space:nowrap;flex:0 1 auto;overflow:hidden;text-overflow:ellipsis}
+.achievement{display:inline-flex;align-items:center;padding:2px 6px;border-radius:999px;background:#fff7d6;color:#8a6100;font-size:9px;font-weight:850;white-space:nowrap;flex:0 1 auto;overflow:hidden;text-overflow:ellipsis}.fire{font-size:12px;font-weight:900;white-space:nowrap;color:#b54708}.badgecount{font-size:9px;font-weight:850;white-space:nowrap;color:#475467;background:#f2f4f7;border-radius:999px;padding:2px 6px}
 .scorebox{text-align:right;min-width:0}.score{font-size:22px;font-weight:900;line-height:1}.pending{font-size:9px;color:#b54708;font-weight:800;white-space:nowrap;margin-top:2px}
 .controls{display:grid;grid-template-columns:38px 38px;gap:5px}
 .scorebtn{height:31px;border-radius:9px;border:1px solid var(--line);font-weight:900;cursor:pointer;font-size:19px}
@@ -66,7 +66,7 @@ input[type=text],input[type=time],select{width:100%;padding:10px 11px;border:1px
   <div class="setting"><label>Score Display</label><select id="scoreMode" onchange="render()"><option value="exact">Show Exact Scores</option><option value="rank">Show Rankings Only</option></select></div>
   <div class="setting"><label>History & Trends Window</label><select id="trendWindow"><option>Last 5 rehearsals</option><option>Last 10 rehearsals</option><option>Month</option></select></div>
   <div class="setting"><label>Student Achievements</label><select id="achievements"><option value="on">On — pop-ups, sound & confetti</option><option value="off">Off</option></select></div>
-  <div class="setting"><label>Achievement Metrics</label><button class="btn" onclick="resetAchievementMetrics()">Reset Achievement Metrics</button><small style="display:block;margin-top:6px">Clears current rehearsal achievement counters and banners for this ensemble without changing section scores.</small></div>
+  <div class="setting"><label>Achievement Metrics</label><button class="btn" onclick="resetAchievementMetrics()">Reset Achievement Metrics</button><small style="display:block;margin-top:6px">Resets today's achievement counters, streaks, banners, and the Best Rehearsal baseline without changing scores or collected badges.</small></div>
   <div class="setting"><label>Daily Email</label><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><select><option>On</option><option>Off</option></select><input type="time" value="13:20"></div><small>Brandon.mcardell@fairport.org · school days only. Backend hookup still pending.</small></div>
   <div class="setting"><label>Score Season</label><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" onclick="resetScores()">Reset Current Scores</button><button class="btn" onclick="archiveSeason()">View / Archive Previous Score Seasons</button></div></div>
 </div></div>
@@ -104,8 +104,36 @@ const defaults={
 let state=JSON.parse(localStorage.getItem(STORAGE)||'null')||{ensembles:defaults,archives:[]};
 if(!state.ensembles) state={ensembles:defaults,archives:[]};
 let current=Object.keys(state.ensembles)[0];
-let pending={},lastOrder=[];
+let pending={},pendingHadMinus={},lastOrder=[],celebrationQueue=[];
 function persist(){localStorage.setItem(STORAGE,JSON.stringify(state))}
+function todayKey(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function ensureMetrics(){
+ const key=todayKey();
+ if(!state.lastDailyReset){
+   Object.values(state.ensembles).flat().forEach(s=>{
+     s.bestDailyPositive=Math.max(Number(s.bestDailyPositive||0),Number(s.today||0));
+     s.positiveToday=0;s.today=0;s.fireStreak=0;s.recoveryPoints=0;s.hadMinusToday=false;s.achievement='';
+     s.badges=Array.isArray(s.badges)?s.badges:[];
+     s.positiveDays=Number(s.positiveDays||0);
+   });
+   state.lastDailyReset=key;persist();return;
+ }
+ if(state.lastDailyReset!==key){
+   Object.values(state.ensembles).flat().forEach(s=>{
+     const prior=Number(s.positiveToday||0);
+     if(prior>0)s.positiveDays=Number(s.positiveDays||0)+1;
+     s.bestDailyPositive=Math.max(Number(s.bestDailyPositive||0),prior);
+     s.positiveToday=0;s.today=0;s.fireStreak=0;s.recoveryPoints=0;s.hadMinusToday=false;s.achievement='';
+     s.badges=Array.isArray(s.badges)?s.badges:[];
+   });
+   state.lastDailyReset=key;persist();
+ }
+}
+function badgeDefinitions(){return[['fire','🔥','On Fire'],['best','⭐','Personal Best'],['climber','🚀','Climber'],['comeback','💪','Comeback'],['consistent','🎵','Consistency']]}
+function awardBadge(s,id){s.badges=Array.isArray(s.badges)?s.badges:[];if(s.badges.includes(id))return false;s.badges.push(id);return true}
+function badgeCount(s){return (Array.isArray(s.badges)?s.badges:[]).length}
+function queueCelebration(name,title,detail){celebrationQueue.push({name,title,detail})}
+function playNextCelebration(){if(!celebrationQueue.length)return;const x=celebrationQueue.shift();celebrate(x.name,x.title+(x.detail?' — '+x.detail:''))}
 function k(name){return current+'::'+name}
 function delta(name){return pending[k(name)]||0}
 function hasCurrentPending(){return state.ensembles[current].some(s=>delta(s.name)!==0)}
@@ -113,7 +141,7 @@ function rows(){return [...state.ensembles[current]].sort((a,b)=>b.score-a.score
 function updateEnsembleButton(){document.getElementById('ensembleBtn').textContent=current}
 function updateSaveButton(){document.getElementById('saveAllBtn').classList.toggle('show',hasCurrentPending())}
 function render(){
- updateEnsembleButton(); updateSaveButton();
+ ensureMetrics(); updateEnsembleButton(); updateSaveButton();
  const mode=document.getElementById('scoreMode')?.value||'exact',board=document.getElementById('board'),r=rows();board.innerHTML='';
  board.style.gridTemplateRows='repeat('+Math.max(r.length,1)+',minmax(0,1fr))';
  r.forEach((s,i)=>{const d=delta(s.name),shown=Math.max(0,s.score+d),el=document.createElement('div');el.className='row';el.dataset.name=s.name;
@@ -125,22 +153,30 @@ function cycleEnsemble(){
  const names=Object.keys(state.ensembles);if(names.length<2)return;
  const i=names.indexOf(current);current=names[(i+1)%names.length];lastOrder=[];render();
 }
-function stage(name,amount){const key=k(name),s=state.ensembles[current].find(x=>x.name===name);pending[key]=(pending[key]||0)+amount;if(s.score+pending[key]<0)pending[key]=-s.score;render()}
+function stage(name,amount){const key=k(name),s=state.ensembles[current].find(x=>x.name===name);pending[key]=(pending[key]||0)+amount;if(amount<0)pendingHadMinus[key]=true;if(s.score+pending[key]<0)pending[key]=-s.score;render()}
 function saveChanges(){
- const celebrations=[];
+ ensureMetrics();
+ const beforeRanks={};rows().forEach((s,i)=>beforeRanks[s.name]=i+1);
  state.ensembles[current].forEach(s=>{
-   const key=k(s.name),d=pending[key]||0;
-   if(!d)return;
+   const key=k(s.name),d=pending[key]||0,hadMinus=!!pendingHadMinus[key];
+   if(!d&&!hadMinus)return;
    s.score=Math.max(0,s.score+d);
    s.today=(s.today||0)+d;
-   delete pending[key];
-   if(d>0&&document.getElementById('achievements').value!=='off'){
-     if(s.today===3){s.achievement='3-day positive streak';celebrations.push([s.name,'3-Day Positive Streak'])}
-     else if(s.today>=4){s.achievement='Best rehearsal yet';celebrations.push([s.name,'Best Rehearsal Yet'])}
-   }
+   s.positiveToday=Number(s.positiveToday||0)+Math.max(d,0);
+   s.badges=Array.isArray(s.badges)?s.badges:[];
+   s.bestDailyPositive=Number(s.bestDailyPositive||0);
+   s.positiveDays=Number(s.positiveDays||0);
+   if(hadMinus||d<0){s.fireStreak=0;s.hadMinusToday=true;s.recoveryPoints=0}
+   else if(d>0){s.fireStreak=Number(s.fireStreak||0)+d;if(s.hadMinusToday)s.recoveryPoints=Number(s.recoveryPoints||0)+d}
+   s.achievement='';
+   if((s.fireStreak||0)>=5){s.achievement='🔥 On Fire';if(awardBadge(s,'fire'))queueCelebration(s.name,'🔥 On Fire','5 positive recognitions without losing a point')}
+   if(s.bestDailyPositive>0 && s.positiveToday>=5 && s.positiveToday>s.bestDailyPositive){s.achievement='⭐ Personal Best';if(awardBadge(s,'best'))queueCelebration(s.name,'⭐ Personal Best','new best rehearsal')}
+   if(s.hadMinusToday && (s.recoveryPoints||0)>=3){s.achievement='💪 Comeback';if(awardBadge(s,'comeback'))queueCelebration(s.name,'💪 Comeback','3 positive points after a setback')}
+   if((s.positiveDays||0)>=4){if(awardBadge(s,'consistent'))queueCelebration(s.name,'🎵 Consistency','positive recognition across 5 rehearsal days')}
+   delete pending[key];delete pendingHadMinus[key];
  });
- persist();render();
- if(celebrations.length) celebrate(celebrations[0][0],celebrations[0][1]);
+ rows().forEach((s,i)=>{const before=beforeRanks[s.name]||i+1,afterRank=i+1;if(before-afterRank>=2){s.achievement='🚀 Climber';if(awardBadge(s,'climber'))queueCelebration(s.name,'🚀 Climber','moved up at least 2 places')}});
+ persist();render();playNextCelebration();
 }
 function openSettings(){document.getElementById('ensembleName').value=current;renderManage();document.getElementById('settings').classList.add('open')}
 function closeSettings(){const n=document.getElementById('ensembleName').value.trim();if(n&&n!==current){state.ensembles[n]=state.ensembles[current];delete state.ensembles[current];current=n}persist();render();document.getElementById('settings').classList.remove('open')}
@@ -149,18 +185,27 @@ function renameSection(i,v){state.ensembles[current][i].name=v.trim()||state.ens
 function deleteSection(i){if(confirm('Remove this section?')){state.ensembles[current].splice(i,1);persist();renderManage();render()}}
 function addSection(){const n=prompt('New section name');if(!n)return;state.ensembles[current].push({name:n.trim(),score:0,today:0,achievement:''});persist();renderManage();render()}
 function resetAchievementMetrics(){
- if(!confirm('Reset achievement metrics for '+current+'? Scores will stay exactly the same.'))return;
- state.ensembles[current].forEach(s=>{s.today=0;s.achievement=''});
- persist();render();
- alert('Achievement metrics reset. Section scores were not changed.');
+ if(!confirm('Reset achievement metrics for '+current+'? Scores and collected badges will stay the same.'))return;
+ state.ensembles[current].forEach(s=>{s.today=0;s.positiveToday=0;s.fireStreak=0;s.recoveryPoints=0;s.hadMinusToday=false;s.achievement='';s.bestDailyPositive=0});
+ state.lastDailyReset=todayKey();persist();render();
+ alert('Achievement metrics reset. Scores and collected badges were not changed.');
 }
 function resetScores(){if(confirm('Reset current scores? This version will archive them first.')){state.archives.push({ensemble:current,date:new Date().toISOString(),scores:JSON.parse(JSON.stringify(state.ensembles[current]))});state.ensembles[current].forEach(s=>{s.score=0;s.today=0;s.achievement=''}) ;pending={};persist();render()}}
 function archiveSeason(){alert(state.archives.length?state.archives.length+' archived score season(s) saved in this browser.':'No archived seasons yet.')}
-function showTrends(){const r=rows();let h='';r.forEach(s=>h+='<div style="display:grid;grid-template-columns:1fr auto;gap:12px;padding:12px;border:1px solid #dbe3ee;border-radius:12px;margin-bottom:8px"><div><strong>'+s.name+'</strong><div style="color:#667085;font-size:13px">'+((s.today||0)>1?'↑ gaining momentum':(s.today||0)===0?'→ no points today':'→ steady')+'</div></div><div style="font-weight:900">'+((s.today||0)>=0?'+':'')+(s.today||0)+'</div></div>');h+='<div style="margin-top:14px;padding:14px;border-radius:14px;background:#fff7d6"><strong>Worth watching:</strong> '+(r[r.length-1]?.name||'—')+' has received the fewest positive recognitions recently. Consider listening intentionally for an authentic opportunity to celebrate progress.</div>';document.getElementById('trendBody').innerHTML=h;document.getElementById('trends').classList.add('open')}
+function showTrends(){
+ ensureMetrics();
+ const r=rows();let h='<div style="margin-bottom:12px;color:#667085;font-size:13px"><strong>Today</strong> · resets automatically at midnight</div>';
+ r.forEach(s=>{
+   const badges=badgeDefinitions().map(b=>'<span title="'+b[2]+'" style="opacity:'+((s.badges||[]).includes(b[0])?'1':'.2')+';margin-right:5px">'+b[1]+'</span>').join('');
+   h+='<div style="display:grid;grid-template-columns:1fr auto;gap:12px;padding:12px;border:1px solid #dbe3ee;border-radius:12px;margin-bottom:8px"><div><strong>'+s.name+'</strong><div style="color:#667085;font-size:12px">Today: '+((s.today||0)>=0?'+':'')+(s.today||0)+' · '+((s.fireStreak||0)>=2?'🔥 '+s.fireStreak+' streak':'no active streak')+'</div><div style="margin-top:5px">'+badges+' <span style="font-size:11px;color:#667085">'+badgeCount(s)+'/5 badges</span></div></div><div style="font-weight:900">'+s.score+'</div></div>';
+ });
+ h+='<div style="margin-top:14px;padding:14px;border-radius:14px;background:#fff7d6"><strong>Badge Bases</strong><br>🔥 On Fire — 5 positive recognitions without a minus<br>⭐ Personal Best — beat a previous rehearsal best with at least 5 positives<br>🚀 Climber — move up at least 2 places after saving<br>💪 Comeback — earn 3 positives after losing a point<br>🎵 Consistency — positive recognition across 5 rehearsal days</div>';
+ document.getElementById('trendBody').innerHTML=h;document.getElementById('trends').classList.add('open');
+}
 function closeTrends(){document.getElementById('trends').classList.remove('open')}
 function celebrate(name,text){document.getElementById('celebrateTitle').textContent=name+'!';document.getElementById('celebrateText').textContent=text;const c=document.getElementById('confetti');c.innerHTML='';const colors=['#2563eb','#f59e0b','#ef4444','#10b981','#8b5cf6','#ec4899'];for(let i=0;i<70;i++){const p=document.createElement('span');p.className='piece';p.style.left=Math.random()*100+'%';p.style.top=(-50-Math.random()*250)+'px';p.style.background=colors[Math.floor(Math.random()*colors.length)];p.style.animationDelay=Math.random()*.8+'s';c.appendChild(p)}document.getElementById('celebrate').classList.add('open');try{const ac=new (window.AudioContext||window.webkitAudioContext)();[523,659,784].forEach((f,i)=>{const o=ac.createOscillator(),g=ac.createGain();o.frequency.value=f;g.gain.setValueAtTime(.05,ac.currentTime+i*.09);g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+.22+i*.09);o.connect(g).connect(ac.destination);o.start(ac.currentTime+i*.09);o.stop(ac.currentTime+.24+i*.09)})}catch(e){}}
-function closeCelebrate(){document.getElementById('celebrate').classList.remove('open')}
-render();
+function closeCelebrate(){document.getElementById('celebrate').classList.remove('open');setTimeout(playNextCelebration,180)}
+ensureMetrics();render();setInterval(()=>{const before=state.lastDailyReset;ensureMetrics();if(before!==state.lastDailyReset)render()},60000);document.addEventListener('visibilitychange',()=>{if(!document.hidden){const before=state.lastDailyReset;ensureMetrics();if(before!==state.lastDailyReset)render()}});
 </script>
 </body>
 </html>
