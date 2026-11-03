@@ -185,17 +185,106 @@ function render(){
  document.getElementById('ensembleBtn').textContent=current;
  document.getElementById('editSaveBtn').textContent=editMode?'Save':'Edit';
  document.getElementById('note').textContent=editMode?'Cards are locked to your instrument order while you score.':'Press Edit to lock cards into your instrument order for scoring.';
- const b=document.getElementById('board'),r=displayRows(),ranks=rankMap(),split=topHalfCount();b.innerHTML='';b.style.gridTemplateRows='repeat('+Math.max(r.length,1)+',minmax(0,1fr))';
- r.forEach((s,i)=>{initSection(s);const dd=delta(s.name),shown=Math.max(0,s.score+dd),el=document.createElement('div');el.className='row'+(editMode?' editing':'')+(!editMode&&i===split-1?' zoneDivider':'');el.dataset.name=s.name;
-   const cleanToday=s.positiveToday>0&&s.minusToday===0;const effectiveFire=s.fireDays+(cleanToday?1:0),lossAllowed=!editMode||canLose(s.name);
-   el.innerHTML='<div class="rank '+(editMode?'editrank':'')+'">'+(editMode?'•':ranks[s.name])+'</div>'+
-   '<div class="section"><div class="name">'+s.name+'</div>'+(s.achievement?'<div class="tag">'+s.achievement+'</div>':'')+(effectiveFire>=2?'<div class="fire">🔥 '+effectiveFire+' days</div>':'')+badgeStrip(s)+'<div class="badgecount">'+s.badges.length+'/5 badges</div></div>'+
-   '<div class="scorebox"><div class="score">'+shown+'</div>'+(dd?'<div class="pending">'+(dd>0?'+':'')+dd+' pending</div>':'')+'</div>'+
-   '<div class="controls"><button class="scorebtn minus" '+(!editMode||!lossAllowed?'disabled':'')+' title="'+(lossAllowed?'Remove a point':'Lower half can only gain points')+'" onclick="stage(\\''+s.name+'\\',-1)">−</button><button class="scorebtn plus" '+(!editMode?'disabled':'')+' onclick="stage(\\''+s.name+'\\',1)">+</button></div>';
+ const b=document.getElementById('board'),r=displayRows(),ranks=rankMap(),split=topHalfCount();
+ b.innerHTML='';
+ b.style.gridTemplateRows='repeat('+Math.max(r.length,1)+',minmax(0,1fr))';
+
+ r.forEach((s,i)=>{
+   initSection(s);
+   const dd=delta(s.name),shown=Math.max(0,s.score+dd),el=document.createElement('div');
+   el.className='row'+(editMode?' editing':'')+(!editMode&&i===split-1?' zoneDivider':'');
+   el.dataset.name=s.name;
+
+   const cleanToday=s.positiveToday>0&&s.minusToday===0;
+   const effectiveFire=s.fireDays+(cleanToday?1:0);
+   const lossAllowed=!editMode||canLose(s.name);
+
+   const rank=document.createElement('div');
+   rank.className='rank '+(editMode?'editrank':'');
+   rank.textContent=editMode?'•':ranks[s.name];
+
+   const section=document.createElement('div');
+   section.className='section';
+
+   const name=document.createElement('div');
+   name.className='name';
+   name.textContent=s.name;
+   section.appendChild(name);
+
+   if(s.achievement){
+     const tag=document.createElement('div');
+     tag.className='tag';
+     tag.textContent=s.achievement;
+     section.appendChild(tag);
+   }
+
+   if(effectiveFire>=2){
+     const fire=document.createElement('div');
+     fire.className='fire';
+     fire.textContent='🔥 '+effectiveFire+' days';
+     section.appendChild(fire);
+   }
+
+   const badgeWrap=document.createElement('div');
+   badgeWrap.innerHTML=badgeStrip(s);
+   if(badgeWrap.firstChild)section.appendChild(badgeWrap.firstChild);
+
+   const badgeCount=document.createElement('div');
+   badgeCount.className='badgecount';
+   badgeCount.textContent=s.badges.length+'/5 badges';
+   section.appendChild(badgeCount);
+
+   const scorebox=document.createElement('div');
+   scorebox.className='scorebox';
+   const score=document.createElement('div');
+   score.className='score';
+   score.textContent=shown;
+   scorebox.appendChild(score);
+   if(dd){
+     const pend=document.createElement('div');
+     pend.className='pending';
+     pend.textContent=(dd>0?'+':'')+dd+' pending';
+     scorebox.appendChild(pend);
+   }
+
+   const controls=document.createElement('div');
+   controls.className='controls';
+
+   const minus=document.createElement('button');
+   minus.className='scorebtn minus';
+   minus.textContent='−';
+   minus.disabled=!editMode||!lossAllowed;
+   minus.title=lossAllowed?'Remove a point':'Lower half can only gain points';
+   minus.addEventListener('click',()=>stage(s.name,-1));
+
+   const plus=document.createElement('button');
+   plus.className='scorebtn plus';
+   plus.textContent='+';
+   plus.disabled=!editMode;
+   plus.addEventListener('click',()=>stage(s.name,1));
+
+   controls.appendChild(minus);
+   controls.appendChild(plus);
+
+   el.appendChild(rank);
+   el.appendChild(section);
+   el.appendChild(scorebox);
+   el.appendChild(controls);
    b.appendChild(el);
  });
+
  const now=r.map(x=>x.name);
- if(lastOrder.length&&!editMode)now.forEach(n=>{if(lastOrder.indexOf(n)!==now.indexOf(n)){const el=[...document.querySelectorAll('.row')].find(x=>x.dataset.name===n);if(el){el.classList.add('bump');setTimeout(()=>el.classList.remove('bump'),650)}}});
+ if(lastOrder.length&&!editMode){
+   now.forEach(n=>{
+     if(lastOrder.indexOf(n)!==now.indexOf(n)){
+       const el=[...document.querySelectorAll('.row')].find(x=>x.dataset.name===n);
+       if(el){
+         el.classList.add('bump');
+         setTimeout(()=>el.classList.remove('bump'),650);
+       }
+     }
+   });
+ }
  lastOrder=now;
 }
 function toggleEditSave(){
