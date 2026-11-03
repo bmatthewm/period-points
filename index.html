@@ -18,7 +18,7 @@ button,input,select{font:inherit}.btn{border:1px solid var(--line);background:#f
 .row.editing{background:#fbfdff;border-color:#cbd5e1}.row.bump{transform:scale(1.012);box-shadow:0 13px 30px rgba(37,99,235,.16)}
 .rank{font-size:17px;font-weight:900;text-align:center}.editrank{color:#98a2b3}
 .section{display:flex;align-items:center;gap:6px;min-width:0;overflow:hidden}.name{font-size:15px;font-weight:850;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.tag,.fire,.badgecount{font-size:9px;white-space:nowrap;border-radius:999px;padding:2px 6px}.tag{background:#fff7d6;color:#8a6100}.fire{color:#b54708;font-weight:900}.badgecount{background:#f2f4f7;color:#475467;font-weight:850}
+.tag,.fire,.badgecount{font-size:9px;white-space:nowrap;border-radius:999px;padding:2px 6px}.tag{background:#fff7d6;color:#8a6100}.fire{color:#b54708;font-weight:900}.badgecount{background:#f2f4f7;color:#475467;font-weight:850}.badgeStrip{display:flex;align-items:center;gap:5px;white-space:nowrap}.badgeIcon{font-size:17px;line-height:1;filter:grayscale(1);opacity:.18}.badgeIcon.earned{filter:none;opacity:1}.zoneDivider{position:relative;margin-bottom:9px}.zoneDivider:after{content:'top half can lose points  •  lower half gains only';position:absolute;left:44px;right:0;bottom:-8px;border-top:1px solid #cbd5e1;padding-top:1px;text-align:center;color:#98a2b3;font-size:8px;letter-spacing:.02em;background:var(--bg)}
 .scorebox{text-align:right}.score{font-size:20px;font-weight:900;line-height:1}.pending{font-size:9px;color:#b54708;font-weight:850;margin-top:2px;white-space:nowrap}
 .controls{display:grid;grid-template-columns:34px 34px;gap:5px}.scorebtn{height:29px;border-radius:9px;border:1px solid var(--line);font-weight:900;cursor:pointer;font-size:18px}.scorebtn:disabled{opacity:.45;cursor:default}
 .minus{background:#fff5f5;color:var(--red)}.plus{background:#ecfdf3;color:var(--green)}
@@ -33,7 +33,7 @@ input[type=text],select{width:100%;padding:9px 10px;border:1px solid var(--line)
 @keyframes fall{from{transform:translateY(-80px) rotate(0);opacity:1}to{transform:translateY(560px) rotate(680deg);opacity:0}}
 @media(max-width:700px){
  .wrap{padding:8px}.sub{display:none}h1{font-size:21px}.actions{gap:3px}.btn{padding:6px 7px;font-size:10px}.ensembleBtn{min-width:104px}
- .board{gap:3px}.row{grid-template-columns:24px minmax(0,1fr) 42px 60px;gap:3px;padding:3px 5px;border-radius:9px}.rank{font-size:13px}.name{font-size:11px}.tag,.fire,.badgecount{font-size:7px;padding:1px 4px}.score{font-size:15px}.pending{display:none}.controls{grid-template-columns:28px 28px;gap:3px}.scorebtn{height:24px;font-size:15px}.note{display:none}
+ .board{gap:3px}.row{grid-template-columns:24px minmax(0,1fr) 42px 60px;gap:3px;padding:3px 5px;border-radius:9px}.rank{font-size:13px}.name{font-size:11px}.tag,.fire,.badgecount{font-size:7px;padding:1px 4px}.badgeStrip{display:none}.score{font-size:15px}.pending{display:none}.controls{grid-template-columns:28px 28px;gap:3px}.scorebtn{height:24px;font-size:15px}.note{display:none}.zoneDivider{margin-bottom:7px}.zoneDivider:after{left:26px;bottom:-6px;font-size:6px}
 }
 @media(max-height:720px){.wrap{padding-top:7px}.topbar{margin-bottom:4px}.sub{display:none}.board{gap:3px}.row{padding-top:2px;padding-bottom:2px}.note{display:none}}
 </style>
@@ -84,13 +84,13 @@ const fallback={
 };
 let state=JSON.parse(localStorage.getItem(STORAGE)||'null')||{ensembles:fallback,archives:[],lastDailyReset:null};
 if(!state.ensembles)state={ensembles:fallback,archives:[],lastDailyReset:null};
-let current=Object.keys(state.ensembles)[0],editMode=false,pending={},stageStats={},celebrationQueue=[],lastOrder=[];
+let current=Object.keys(state.ensembles)[0],editMode=false,pending={},stageStats={},celebrationQueue=[],lastOrder=[],editRankSnapshot={};
 function persist(){localStorage.setItem(STORAGE,JSON.stringify(state))}
 function todayKey(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
 function initSection(s){
  s.score=Number(s.score||0);s.today=Number(s.today||0);s.positiveToday=Number(s.positiveToday||0);s.minusToday=Number(s.minusToday||0);
  s.fireDays=Number(s.fireDays||0);s.bestDailyPositive=Number(s.bestDailyPositive||0);s.badges=Array.isArray(s.badges)?s.badges:[];
- s.recentPositiveDays=Array.isArray(s.recentPositiveDays)?s.recentPositiveDays:[];s.achievement=s.achievement||'';s.bestCelebratedDate=s.bestCelebratedDate||'';
+ s.recentPositiveDays=Array.isArray(s.recentPositiveDays)?s.recentPositiveDays:[];s.achievement=s.achievement||'';s.bestCelebratedDate=s.bestCelebratedDate||'';s.savedLossDebt=Number(s.savedLossDebt||0);s.climberEvents=Number(s.climberEvents||0);
  return s;
 }
 Object.values(state.ensembles).forEach(a=>a.forEach(initSection));
@@ -103,7 +103,7 @@ function ensureDailyReset(){
    if(ensembleHadActivity){
      arr.forEach(s=>{
        const cleanPositive=(s.positiveToday||0)>0&&(s.minusToday||0)===0;
-       s.recentPositiveDays.push(cleanPositive);if(s.recentPositiveDays.length>6)s.recentPositiveDays=s.recentPositiveDays.slice(-6);
+       s.recentPositiveDays.push(cleanPositive);if(s.recentPositiveDays.length>7)s.recentPositiveDays=s.recentPositiveDays.slice(-7);
        s.fireDays=cleanPositive?(s.fireDays||0)+1:0;
        s.bestDailyPositive=Math.max(Number(s.bestDailyPositive||0),Number(s.positiveToday||0));
      });
@@ -117,6 +117,12 @@ function delta(n){return pending[k(n)]||0}
 function stats(n){return stageStats[k(n)]||{plus:0,minus:0}}
 function ranked(){return [...state.ensembles[current]].sort((a,b)=>b.score-a.score||a.name.localeCompare(b.name))}
 function rankMap(){const m={};ranked().forEach((s,i)=>m[s.name]=i+1);return m}
+function topHalfCount(){return Math.ceil(state.ensembles[current].length/2)}
+function canLose(name){const r=editRankSnapshot[name]||rankMap()[name];return r<=topHalfCount()}
+function badgeStrip(s){
+ const defs=[['fire','🔥'],['comeback','💪'],['best','⭐'],['climber','🚀'],['consistent','🎵']];
+ return '<div class="badgeStrip">'+defs.map(d=>'<span class="badgeIcon '+(s.badges.includes(d[0])?'earned':'')+'">'+d[1]+'</span>').join('')+'</div>';
+}
 function hasPending(){return state.ensembles[current].some(s=>{const st=stats(s.name);return delta(s.name)!==0||st.plus||st.minus})}
 function displayRows(){return editMode?[...state.ensembles[current]]:ranked()}
 function render(){
@@ -124,13 +130,13 @@ function render(){
  document.getElementById('ensembleBtn').textContent=current;
  document.getElementById('editSaveBtn').textContent=editMode?'Save':'Edit';
  document.getElementById('note').textContent=editMode?'Cards are locked to your instrument order while you score.':'Press Edit to lock cards into your instrument order for scoring.';
- const b=document.getElementById('board'),r=displayRows(),ranks=rankMap();b.innerHTML='';b.style.gridTemplateRows='repeat('+Math.max(r.length,1)+',minmax(0,1fr))';
- r.forEach(s=>{initSection(s);const dd=delta(s.name),shown=Math.max(0,s.score+dd),el=document.createElement('div');el.className='row'+(editMode?' editing':'');el.dataset.name=s.name;
-   const cleanToday=s.positiveToday>0&&s.minusToday===0;const effectiveFire=s.fireDays+(cleanToday?1:0);
+ const b=document.getElementById('board'),r=displayRows(),ranks=rankMap(),split=topHalfCount();b.innerHTML='';b.style.gridTemplateRows='repeat('+Math.max(r.length,1)+',minmax(0,1fr))';
+ r.forEach((s,i)=>{initSection(s);const dd=delta(s.name),shown=Math.max(0,s.score+dd),el=document.createElement('div');el.className='row'+(editMode?' editing':'')+(!editMode&&i===split-1?' zoneDivider':'');el.dataset.name=s.name;
+   const cleanToday=s.positiveToday>0&&s.minusToday===0;const effectiveFire=s.fireDays+(cleanToday?1:0),lossAllowed=!editMode||canLose(s.name);
    el.innerHTML='<div class="rank '+(editMode?'editrank':'')+'">'+(editMode?'•':ranks[s.name])+'</div>'+
-   '<div class="section"><div class="name">'+s.name+'</div>'+(s.achievement?'<div class="tag">'+s.achievement+'</div>':'')+(effectiveFire>=2?'<div class="fire">🔥 '+effectiveFire+' days</div>':'')+(s.badges.length?'<div class="badgecount">🏅 '+s.badges.length+'/5</div>':'')+'</div>'+
+   '<div class="section"><div class="name">'+s.name+'</div>'+(s.achievement?'<div class="tag">'+s.achievement+'</div>':'')+(effectiveFire>=2?'<div class="fire">🔥 '+effectiveFire+' days</div>':'')+badgeStrip(s)+'<div class="badgecount">'+s.badges.length+'/5 badges</div></div>'+
    '<div class="scorebox"><div class="score">'+shown+'</div>'+(dd?'<div class="pending">'+(dd>0?'+':'')+dd+' pending</div>':'')+'</div>'+
-   '<div class="controls"><button class="scorebtn minus" '+(!editMode?'disabled':'')+' onclick="stage(\''+s.name+'\',-1)">−</button><button class="scorebtn plus" '+(!editMode?'disabled':'')+' onclick="stage(\''+s.name+'\',1)">+</button></div>';
+   '<div class="controls"><button class="scorebtn minus" '+(!editMode||!lossAllowed?'disabled':'')+' title="'+(lossAllowed?'Remove a point':'Lower half can only gain points')+'" onclick="stage(\\''+s.name+'\\',-1)">−</button><button class="scorebtn plus" '+(!editMode?'disabled':'')+' onclick="stage(\\''+s.name+'\\',1)">+</button></div>';
    b.appendChild(el);
  });
  const now=r.map(x=>x.name);
@@ -138,15 +144,15 @@ function render(){
  lastOrder=now;
 }
 function toggleEditSave(){
- if(!editMode){editMode=true;lastOrder=[];render();return}
+ if(!editMode){editRankSnapshot=rankMap();editMode=true;lastOrder=[];render();return}
  saveChanges();
 }
 function cycleEnsemble(){
  if(editMode&&hasPending()&&!confirm('You have unsaved changes. Switch ensembles and discard them?'))return;
- pending={};stageStats={};const names=Object.keys(state.ensembles),i=names.indexOf(current);current=names[(i+1)%names.length];editMode=false;lastOrder=[];render();
+ pending={};stageStats={};editRankSnapshot={};const names=Object.keys(state.ensembles),i=names.indexOf(current);current=names[(i+1)%names.length];editMode=false;lastOrder=[];render();
 }
 function stage(name,amt){
- if(!editMode)return;const s=state.ensembles[current].find(x=>x.name===name),key=k(name);
+ if(!editMode)return;if(amt<0&&!canLose(name))return;const s=state.ensembles[current].find(x=>x.name===name),key=k(name);
  pending[key]=(pending[key]||0)+amt;stageStats[key]=stageStats[key]||{plus:0,minus:0};
  if(amt>0)stageStats[key].plus++;else stageStats[key].minus++;
  if(s.score+pending[key]<0)pending[key]=-s.score;render();
@@ -160,28 +166,49 @@ function evaluate(s,beforeRank,afterRank,dd,st){
  let banner='';
  if(hadMinus)s.fireDays=0;
 
- if(hadMinus&&hadPlus){
-   banner='💪 Comeback';const isNew=award(s,'comeback');
-   queue(s,'💪',isNew?'Comeback Badge!':'Comeback Again!','Lost a point, then earned it back during today’s rehearsal.',isNew);
+ // A comeback only starts after an actual saved loss. Accidental staging does not count.
+ if(dd<0){
+   s.savedLossDebt+=Math.abs(dd);
+   banner='Point lost — comeback available';
  }
+ if(dd>0&&s.savedLossDebt>0){
+   const recovered=Math.min(dd,s.savedLossDebt);
+   s.savedLossDebt=Math.max(0,s.savedLossDebt-dd);
+   banner='💪 Comeback';
+   const isNew=award(s,'comeback');
+   queue(s,'💪',isNew?'Comeback Badge!':'Comeback Again!','Previously lost a saved point, then earned '+recovered+' point'+(recovered===1?'':'s')+' back on a later save.',isNew);
+ }
+
+ // Climber remains a 1-position daily achievement, but permanent badge requires doing it twice.
  if(afterRank<beforeRank){
-   banner='🚀 Climber';const isNew=award(s,'climber');
-   queue(s,'🚀',isNew?'Climber Badge!':'Climber Again!','Moved from '+ordinal(beforeRank)+' place to '+ordinal(afterRank)+' place after saving.',isNew);
+   banner='🚀 Climber';s.climberEvents+=1;
+   const isNew=s.climberEvents>=2?award(s,'climber'):false;
+   queue(s,'🚀',isNew?'Climber Badge!':'Climber!','Moved from '+ordinal(beforeRank)+' place to '+ordinal(afterRank)+' place after saving.'+(isNew?' Second climb earned the season badge.':''),isNew);
  }
+
  const cleanToday=s.positiveToday>0&&s.minusToday===0;
  const effectiveFire=s.fireDays+(cleanToday?1:0);
+ // Daily On Fire starts at 3 days; season badge is harder at 4 clean rehearsal days.
  if(effectiveFire>=3){
-   banner='🔥 On Fire';const isNew=award(s,'fire');
-   queue(s,'🔥',isNew?'On Fire Badge!':'On Fire Again!','Earned positive recognition for 3 consecutive rehearsal days with no point deductions.',isNew);
+   banner='🔥 On Fire';
+   const isNew=effectiveFire>=4?award(s,'fire'):false;
+   queue(s,'🔥',isNew?'On Fire Badge!':'On Fire!','Positive recognition for '+effectiveFire+' consecutive rehearsal days with no point deductions.'+(isNew?' Four clean days earned the season badge.':''),isNew);
  }
+
+ // Best Rehearsal banner can appear on a new record; permanent badge requires reaching 3 positives.
  if(s.bestDailyPositive>0&&s.positiveToday>s.bestDailyPositive&&s.bestCelebratedDate!==todayKey()){
-   banner='⭐ Best Rehearsal Yet';s.bestCelebratedDate=todayKey();const isNew=award(s,'best');
-   queue(s,'⭐',isNew?'Best Rehearsal Badge!':'Best Rehearsal Yet!','Earned '+s.positiveToday+' positive point'+(s.positiveToday===1?'':'s')+' today — a new section best.',isNew);
+   banner='⭐ Best Rehearsal Yet';s.bestCelebratedDate=todayKey();
+   const isNew=s.positiveToday>=3?award(s,'best'):false;
+   queue(s,'⭐',isNew?'Best Rehearsal Badge!':'Best Rehearsal Yet!','Earned '+s.positiveToday+' positive point'+(s.positiveToday===1?'':'s')+' today — a new section best.'+(isNew?' Reaching 3 positives earned the season badge.':''),isNew);
  }
- const recent=[...s.recentPositiveDays,cleanToday].slice(-6),positiveCount=recent.filter(Boolean).length;
- if(recent.length>=5&&positiveCount>=5){
-   banner='🎵 Consistency';const isNew=award(s,'consistent');
-   queue(s,'🎵',isNew?'Consistency Badge!':'Consistency Again!','Earned positive recognition in 5 of the last 6 rehearsal days.',isNew);
+
+ // Daily consistency recognition at 5/6, permanent badge at 6/7.
+ const recent6=[...s.recentPositiveDays,cleanToday].slice(-6),positive6=recent6.filter(Boolean).length;
+ const recent7=[...s.recentPositiveDays,cleanToday].slice(-7),positive7=recent7.filter(Boolean).length;
+ if(recent6.length>=5&&positive6>=5){
+   banner='🎵 Consistency';
+   const isNew=recent7.length>=7&&positive7>=6?award(s,'consistent'):false;
+   queue(s,'🎵',isNew?'Consistency Badge!':'Consistency!','Positive recognition in '+positive7+' of the last '+recent7.length+' rehearsal days.'+(isNew?' Six of seven earned the season badge.':''),isNew);
  }
  s.achievement=banner;
 }
@@ -194,7 +221,7 @@ function saveChanges(){
    s.score=Math.max(0,s.score+dd);changes.push({s,dd,st});
  });
  pending={};stageStats={};const after=rankMap();changes.forEach(x=>evaluate(x.s,before[x.s.name],after[x.s.name],x.dd,x.st));
- persist();editMode=false;lastOrder=state.ensembles[current].map(s=>s.name);render();setTimeout(playNextCelebration,700);
+ persist();editMode=false;editRankSnapshot={};lastOrder=state.ensembles[current].map(s=>s.name);render();setTimeout(playNextCelebration,700);
 }
 function playNextCelebration(){
  if(!celebrationQueue.length)return;const x=celebrationQueue.shift();
@@ -223,21 +250,21 @@ function deleteSection(i){if(confirm('Remove this section?')){state.ensembles[cu
 function addSection(){const n=prompt('New section name');if(!n)return;state.ensembles[current].push(initSection({name:n.trim(),score:0}));persist();renderManage();render()}
 function resetAchievementMetrics(){
  if(!confirm('Reset achievement metrics for '+current+'? Scores and collected badges will stay the same.'))return;
- state.ensembles[current].forEach(s=>{s.today=0;s.positiveToday=0;s.minusToday=0;s.fireDays=0;s.bestDailyPositive=0;s.recentPositiveDays=[];s.achievement='';s.bestCelebratedDate=''});
+ state.ensembles[current].forEach(s=>{s.today=0;s.positiveToday=0;s.minusToday=0;s.fireDays=0;s.bestDailyPositive=0;s.recentPositiveDays=[];s.achievement='';s.bestCelebratedDate='';s.savedLossDebt=0;s.climberEvents=0});
  state.lastDailyReset=todayKey();persist();render();alert('Achievement metrics reset. Scores and badges were not changed.');
 }
 function showTrends(){
  ensureDailyReset();
  const defs=[
-  ['fire','🔥','On Fire','3 consecutive rehearsal days with a positive point; any minus breaks the streak'],
-  ['comeback','💪','Comeback','Lose a point, then earn it back in the same rehearsal'],
-  ['best','⭐','Best Rehearsal','Beat the section’s previous rehearsal best'],
-  ['climber','🚀','Climber','Move up at least one ranking position after Save'],
-  ['consistent','🎵','Consistency','Positive recognition in 5 of the last 6 rehearsal days']
+  ['fire','🔥','On Fire','3 clean rehearsal days earns the daily achievement; 4 consecutive clean days earns the season badge'],
+  ['comeback','💪','Comeback','A point must be lost on one Save, then regained on a later Save'],
+  ['best','⭐','Best Rehearsal','New personal best earns the daily achievement; reaching 3 positive points in that record rehearsal earns the badge'],
+  ['climber','🚀','Climber','Move up at least one position; the second separate climb earns the season badge'],
+  ['consistent','🎵','Consistency','5 of 6 earns daily recognition; 6 of 7 rehearsal days earns the season badge']
  ];
- let h='<div style="margin-bottom:12px;color:#667085;font-size:13px"><strong>Daily metrics reset at midnight.</strong> Collected badges stay for the season.</div>';
- ranked().forEach(s=>{const icons=defs.map(d=>'<span title="'+d[2]+'" style="opacity:'+(s.badges.includes(d[0])?'1':'.18')+';font-size:20px;margin-right:5px">'+d[1]+'</span>').join('');
-   h+='<div style="padding:11px;border:1px solid #dbe3ee;border-radius:12px;margin-bottom:8px"><div style="display:flex;justify-content:space-between;gap:10px"><strong>'+s.name+'</strong><strong>'+s.score+'</strong></div><div style="margin-top:5px">'+icons+' <span style="font-size:11px;color:#667085">'+s.badges.length+'/5 collected</span></div></div>';
+ let h='<div style="margin-bottom:12px;color:#667085;font-size:13px"><strong>Daily metrics reset at midnight.</strong> Season badges are intentionally harder and stay collected.</div>';
+ ranked().forEach(s=>{const icons=defs.map(d=>'<span title="'+d[2]+'" style="opacity:'+(s.badges.includes(d[0])?'1':'.18')+';font-size:26px;margin-right:8px">'+d[1]+'</span>').join('');
+   h+='<div style="padding:11px;border:1px solid #dbe3ee;border-radius:12px;margin-bottom:8px"><div style="display:flex;justify-content:space-between;gap:10px"><strong>'+s.name+'</strong><strong>'+s.score+'</strong></div><div style="margin-top:7px">'+icons+' <span style="font-size:11px;color:#667085">'+s.badges.length+'/5 collected</span></div></div>';
  });
  h+='<div style="margin-top:14px;padding:14px;border-radius:14px;background:#fff7d6"><strong>Badge Rules</strong><br>'+defs.map(d=>d[1]+' <strong>'+d[2]+'</strong> — '+d[3]).join('<br>')+'</div>';
  document.getElementById('trendBody').innerHTML=h;document.getElementById('trends').classList.add('open');
