@@ -18,7 +18,7 @@ button,input,select{font:inherit}.btn{border:1px solid var(--line);background:#f
 .row.editing{background:#fbfdff;border-color:#cbd5e1}.row.bump{transform:scale(1.012);box-shadow:0 13px 30px rgba(37,99,235,.16)}
 .rank{font-size:17px;font-weight:900;text-align:center}.editrank{color:#98a2b3}
 .section{display:flex;align-items:center;gap:6px;min-width:0;overflow:hidden}.name{font-size:15px;font-weight:850;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.tag,.fire,.badgecount{font-size:9px;white-space:nowrap;border-radius:999px;padding:2px 6px}.tag{background:#fff7d6;color:#8a6100}.fire{color:#b54708;font-weight:900}.badgecount{background:#f2f4f7;color:#475467;font-weight:850}.badgeStrip{display:flex;align-items:center;gap:5px;white-space:nowrap}.badgeIcon{font-size:17px;line-height:1;filter:grayscale(1);opacity:.18}.badgeIcon.earned{filter:none;opacity:1}.zoneDivider{position:relative;margin-bottom:9px}.zoneDivider:after{content:'top half can lose points  •  lower half gains only';position:absolute;left:44px;right:0;bottom:-8px;border-top:1px solid #cbd5e1;padding-top:1px;text-align:center;color:#98a2b3;font-size:8px;letter-spacing:.02em;background:var(--bg)}
+.tag,.fire,.badgecount{font-size:9px;white-space:nowrap;border-radius:999px;padding:2px 6px}.tag{background:#fff7d6;color:#8a6100}.fire{color:#b54708;font-weight:900}.badgecount{background:#f2f4f7;color:#475467;font-weight:850}.badgeStrip{display:flex;align-items:center;gap:5px;white-space:nowrap}.badgeIcon{font-size:17px;line-height:1;filter:grayscale(1);opacity:.18}.badgeIcon.earned{filter:none;opacity:1}
 .scorebox{text-align:right}.score{font-size:20px;font-weight:900;line-height:1}.pending{font-size:9px;color:#b54708;font-weight:850;margin-top:2px;white-space:nowrap}
 .controls{display:grid;grid-template-columns:34px 34px;gap:5px}.scorebtn{height:29px;border-radius:9px;border:1px solid var(--line);font-weight:900;cursor:pointer;font-size:18px}.scorebtn:disabled{opacity:.45;cursor:default}
 .minus{background:#fff5f5;color:var(--red)}.plus{background:#ecfdf3;color:var(--green)}
@@ -33,7 +33,7 @@ input[type=text],select{width:100%;padding:9px 10px;border:1px solid var(--line)
 @keyframes fall{from{transform:translateY(-80px) rotate(0);opacity:1}to{transform:translateY(560px) rotate(680deg);opacity:0}}
 @media(max-width:700px){
  .wrap{padding:8px}.sub{display:none}h1{font-size:21px}.actions{gap:3px}.btn{padding:6px 7px;font-size:10px}.ensembleBtn{min-width:104px}
- .board{gap:3px}.row{grid-template-columns:24px minmax(0,1fr) 42px 60px;gap:3px;padding:3px 5px;border-radius:9px}.rank{font-size:13px}.name{font-size:11px}.tag,.fire,.badgecount{font-size:7px;padding:1px 4px}.badgeStrip{display:none}.score{font-size:15px}.pending{display:none}.controls{grid-template-columns:28px 28px;gap:3px}.scorebtn{height:24px;font-size:15px}.note{display:none}.zoneDivider{margin-bottom:7px}.zoneDivider:after{left:26px;bottom:-6px;font-size:6px}
+ .board{gap:3px}.row{grid-template-columns:24px minmax(0,1fr) 42px 60px;gap:3px;padding:3px 5px;border-radius:9px}.rank{font-size:13px}.name{font-size:11px}.tag,.fire,.badgecount{font-size:7px;padding:1px 4px}.badgeStrip{display:none}.score{font-size:15px}.pending{display:none}.controls{grid-template-columns:28px 28px;gap:3px}.scorebtn{height:24px;font-size:15px}.note{display:none}
 }
 @media(max-height:720px){.wrap{padding-top:7px}.topbar{margin-bottom:4px}.sub{display:none}.board{gap:3px}.row{padding-top:2px;padding-bottom:2px}.note{display:none}}
 </style>
@@ -106,7 +106,7 @@ function loadStateSafely(){
 }
 let state=loadStateSafely();
 if(!state.ensembles||!Object.keys(state.ensembles).length)state={ensembles:fallback,archives:[],lastDailyReset:null};
-let current=Object.keys(state.ensembles)[0],editMode=false,pending={},stageStats={},celebrationQueue=[],lastOrder=[],editRankSnapshot={};
+let current=Object.keys(state.ensembles)[0],editMode=false,pending={},stageStats={},celebrationQueue=[],lastOrder=[];
 function backupCurrent(){
  const raw=localStorage.getItem(STORAGE);
  if(raw){
@@ -134,7 +134,7 @@ function restorePreviousBackup(){
    localStorage.setItem(STORAGE,raw);
    state=restored;
    current=Object.keys(state.ensembles)[0];
-   pending={};stageStats={};editMode=false;editRankSnapshot={};
+   pending={};stageStats={};editMode=false;
    if(localStorage.getItem(STORAGE)&&!localStorage.getItem(BACKUP))localStorage.setItem(BACKUP,localStorage.getItem(STORAGE));
 Object.values(state.ensembles).forEach(a=>a.forEach(initSection));
    render();
@@ -172,8 +172,6 @@ function delta(n){return pending[k(n)]||0}
 function stats(n){return stageStats[k(n)]||{plus:0,minus:0}}
 function ranked(){return [...state.ensembles[current]].sort((a,b)=>b.score-a.score||a.name.localeCompare(b.name))}
 function rankMap(){const m={};ranked().forEach((s,i)=>m[s.name]=i+1);return m}
-function topHalfCount(){return Math.ceil(state.ensembles[current].length/2)}
-function canLose(name){const r=editRankSnapshot[name]||rankMap()[name];return r<=topHalfCount()}
 function badgeStrip(s){
  const defs=[['fire','🔥'],['comeback','💪'],['best','⭐'],['climber','🚀'],['consistent','🎵']];
  return '<div class="badgeStrip">'+defs.map(d=>'<span class="badgeIcon '+(s.badges.includes(d[0])?'earned':'')+'">'+d[1]+'</span>').join('')+'</div>';
@@ -185,14 +183,14 @@ function render(){
  document.getElementById('ensembleBtn').textContent=current;
  document.getElementById('editSaveBtn').textContent=editMode?'Save':'Edit';
  document.getElementById('note').textContent=editMode?'Cards are locked to your instrument order while you score.':'Press Edit to lock cards into your instrument order for scoring.';
- const b=document.getElementById('board'),r=displayRows(),ranks=rankMap(),split=topHalfCount();
+ const b=document.getElementById('board'),r=displayRows(),ranks=rankMap();
  b.innerHTML='';
  b.style.gridTemplateRows='repeat('+Math.max(r.length,1)+',minmax(0,1fr))';
 
  r.forEach((s,i)=>{
    initSection(s);
    const dd=delta(s.name),shown=Math.max(0,s.score+dd),el=document.createElement('div');
-   el.className='row'+(editMode?' editing':'')+(!editMode&&i===split-1?' zoneDivider':'');
+   el.className='row'+(editMode?' editing':'');
    el.dataset.name=s.name;
 
    const cleanToday=s.positiveToday>0&&s.minusToday===0;
@@ -288,15 +286,15 @@ function render(){
  lastOrder=now;
 }
 function toggleEditSave(){
- if(!editMode){editRankSnapshot=rankMap();editMode=true;lastOrder=[];render();return}
+ if(!editMode){editMode=true;lastOrder=[];render();return}
  saveChanges();
 }
 function cycleEnsemble(){
  if(editMode&&hasPending()&&!confirm('You have unsaved changes. Switch ensembles and discard them?'))return;
- pending={};stageStats={};editRankSnapshot={};const names=Object.keys(state.ensembles),i=names.indexOf(current);current=names[(i+1)%names.length];editMode=false;lastOrder=[];render();
+ pending={};stageStats={};const names=Object.keys(state.ensembles),i=names.indexOf(current);current=names[(i+1)%names.length];editMode=false;lastOrder=[];render();
 }
 function stage(name,amt){
- if(!editMode)return;if(amt<0&&!canLose(name))return;const s=state.ensembles[current].find(x=>x.name===name),key=k(name);
+ if(!editMode)return;const s=state.ensembles[current].find(x=>x.name===name),key=k(name);
  pending[key]=(pending[key]||0)+amt;stageStats[key]=stageStats[key]||{plus:0,minus:0};
  if(amt>0)stageStats[key].plus++;else stageStats[key].minus++;
  if(s.score+pending[key]<0)pending[key]=-s.score;render();
@@ -365,7 +363,7 @@ function saveChanges(){
    s.score=Math.max(0,s.score+dd);changes.push({s,dd,st});
  });
  pending={};stageStats={};const after=rankMap();changes.forEach(x=>evaluate(x.s,before[x.s.name],after[x.s.name],x.dd,x.st));
- persist();editMode=false;editRankSnapshot={};lastOrder=state.ensembles[current].map(s=>s.name);render();setTimeout(playNextCelebration,700);
+ persist();editMode=false;lastOrder=state.ensembles[current].map(s=>s.name);render();setTimeout(playNextCelebration,700);
 }
 function playNextCelebration(){
  if(!celebrationQueue.length)return;const x=celebrationQueue.shift();
