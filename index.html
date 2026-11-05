@@ -195,7 +195,6 @@ function render(){
 
    const cleanToday=s.positiveToday>0&&s.minusToday===0;
    const effectiveFire=s.fireDays+(cleanToday?1:0);
-   const lossAllowed=!editMode||canLose(s.name);
 
    const rank=document.createElement('div');
    rank.className='rank '+(editMode?'editrank':'');
@@ -251,8 +250,8 @@ function render(){
    const minus=document.createElement('button');
    minus.className='scorebtn minus';
    minus.textContent='−';
-   minus.disabled=!editMode||!lossAllowed;
-   minus.title=lossAllowed?'Remove a point':'Lower half can only gain points';
+   minus.disabled=!editMode;
+   minus.title='Remove a point';
    minus.addEventListener('click',()=>stage(s.name,-1));
 
    const plus=document.createElement('button');
