@@ -19,7 +19,7 @@ button,input,select{font:inherit}.btn{border:1px solid var(--line);background:#f
 .rank{font-size:17px;font-weight:900;text-align:center}.editrank{color:#98a2b3}
 .section{display:flex;align-items:center;gap:6px;min-width:0;overflow:hidden}.name{font-size:15px;font-weight:850;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .tag,.fire,.badgecount{font-size:9px;white-space:nowrap;border-radius:999px;padding:2px 6px}.tag{background:#fff7d6;color:#8a6100}.fire{color:#b54708;font-weight:900}.badgecount{background:#f2f4f7;color:#475467;font-weight:850}.badgeStrip{display:flex;align-items:center;gap:5px;white-space:nowrap}.badgeIcon{font-size:17px;line-height:1;filter:grayscale(1);opacity:.18}.badgeIcon.earned{filter:none;opacity:1}
-.scorebox{text-align:right}.score{font-size:20px;font-weight:900;line-height:1}.pending{font-size:9px;color:#b54708;font-weight:850;margin-top:2px;white-space:nowrap}
+.scorebox{text-align:right;min-width:0}.score{font-size:20px;font-weight:900;line-height:1}.pending{font-size:10px;color:#b54708;font-weight:850;margin-top:3px;white-space:nowrap}
 .controls{display:grid;grid-template-columns:34px 34px;gap:5px}.scorebtn{height:29px;border-radius:9px;border:1px solid var(--line);font-weight:900;cursor:pointer;font-size:18px}.scorebtn:disabled{opacity:.45;cursor:default}
 .minus{background:#fff5f5;color:var(--red)}.plus{background:#ecfdf3;color:var(--green)}
 .note{font-size:9px;color:var(--muted);text-align:center;margin-top:5px;flex:0 0 auto}
@@ -32,10 +32,39 @@ input[type=text],select{width:100%;padding:9px 10px;border:1px solid var(--line)
 .newbadge{display:inline-block;background:#eef4ff;color:#1d4ed8;border-radius:999px;padding:5px 10px;font-weight:900;font-size:12px;margin-bottom:8px}.big{font-size:56px}.celebrate-card h2{font-size:34px;margin:3px 0 8px}.celebrate-card p{font-size:18px;margin:0 auto;color:#475467;max-width:540px;line-height:1.4}.confetti{position:absolute;inset:0;pointer-events:none}.piece{position:absolute;width:10px;height:18px;border-radius:3px;animation:fall 2.6s linear forwards}
 @keyframes fall{from{transform:translateY(-80px) rotate(0);opacity:1}to{transform:translateY(560px) rotate(680deg);opacity:0}}
 @media(max-width:700px){
- .wrap{padding:8px}.sub{display:none}h1{font-size:21px}.actions{gap:3px}.btn{padding:6px 7px;font-size:10px}.ensembleBtn{min-width:104px}
- .board{gap:3px}.row{grid-template-columns:24px minmax(0,1fr) 42px 60px;gap:3px;padding:3px 5px;border-radius:9px}.rank{font-size:13px}.name{font-size:11px}.tag,.fire,.badgecount{font-size:7px;padding:1px 4px}.badgeStrip{display:none}.score{font-size:15px}.pending{display:none}.controls{grid-template-columns:28px 28px;gap:3px}.scorebtn{height:24px;font-size:15px}.note{display:none}
+ .wrap{padding:7px}.sub{display:none}h1{font-size:23px}.actions{gap:3px}.btn{padding:6px 7px;font-size:11px}.ensembleBtn{min-width:100px}
+ .board{gap:3px}
+ .row{grid-template-columns:26px minmax(0,1fr) 84px 64px;gap:4px;padding:4px 6px;border-radius:9px}
+ .rank{font-size:16px}
+ .section{gap:5px;min-width:0}
+ .name{font-size:15px;font-weight:900;flex:0 1 auto}
+ .tag{font-size:8px;padding:1px 4px}
+ .fire{font-size:9px;padding:0}
+ .badgeStrip{display:flex;gap:3px;flex:0 0 auto}
+ .badgeIcon{font-size:15px}
+ .badgecount{display:none}
+ .score{font-size:19px}
+ .pending{display:block;font-size:9px;line-height:1.05;margin-top:3px}
+ .controls{grid-template-columns:30px 30px;gap:4px}
+ .scorebtn{height:27px;font-size:18px}
+ .note{display:none}
 }
-@media(max-width:430px){.row{grid-template-columns:24px minmax(0,1fr) 44px 60px;gap:3px;padding-left:4px;padding-right:4px}.rank{font-size:14px}.name{font-size:13px}.score{font-size:17px}.btn{font-size:11px;padding:5px 6px}.ensembleBtn{min-width:94px}.controls{grid-template-columns:28px 28px;gap:3px}.scorebtn{height:25px;font-size:17px}}\n@media(max-height:720px){.wrap{padding-top:7px}.topbar{margin-bottom:4px}.sub{display:none}.board{gap:3px}.row{padding-top:2px;padding-bottom:2px}.note{display:none}}
+@media(max-width:430px){
+ .row{grid-template-columns:23px minmax(0,1fr) 76px 58px;gap:3px;padding-left:4px;padding-right:4px}
+ .rank{font-size:14px}
+ .name{font-size:14px}
+ .badgeStrip{gap:2px}
+ .badgeIcon{font-size:13px}
+ .tag{display:none}
+ .fire{font-size:8px}
+ .score{font-size:18px}
+ .pending{font-size:8px}
+ .btn{font-size:10px;padding:5px 6px}
+ .ensembleBtn{min-width:88px}
+ .controls{grid-template-columns:27px 27px;gap:3px}
+ .scorebtn{height:25px;font-size:17px}
+}
+@media(max-height:720px){.wrap{padding-top:7px}.topbar{margin-bottom:4px}.sub{display:none}.board{gap:3px}.row{padding-top:2px;padding-bottom:2px}.note{display:none}}
 </style>
 </head>
 <body>
@@ -240,7 +269,7 @@ function render(){
    if(dd){
      const pend=document.createElement('div');
      pend.className='pending';
-     pend.textContent=(dd>0?'+':'')+dd+' pending';
+     pend.textContent=(dd>0?'+':'')+dd+' pending point'+(Math.abs(dd)===1?'':'s');
      scorebox.appendChild(pend);
    }
 
