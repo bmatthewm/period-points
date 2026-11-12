@@ -57,7 +57,7 @@ input[type=text],select{width:100%;padding:9px 10px;border:1px solid var(--line)
   <div class="panelhead"><h2>Settings</h2><button class="btn" onclick="closeSettings()">Done</button></div>
   <div class="setting"><label>Manage Ensemble</label><input id="ensembleName" type="text"><small>Rename the current ensemble.</small></div>
   <div class="setting"><label>Manage Sections & Instrument Order</label><small>Drag the ☰ handle to set the fixed order used during Edit Mode.</small><div id="manageSections" class="manage"></div><button class="btn" style="margin-top:9px" onclick="addSection()">+ Add Section</button></div>
-  <div class="setting"><label>Achievement Metrics</label><button class="btn" onclick="resetAchievementMetrics()">Reset Achievement Metrics</button><small style="display:block;margin-top:6px">Resets daily streak/best-rehearsal tracking. Scores and collected season badges stay intact.</small></div><div class="setting"><label>Data Safety</label><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" onclick="makeManualBackup()">Create Backup</button><button class="btn" onclick="restorePreviousBackup()">Restore Previous Backup</button></div><small style="display:block;margin-top:6px">A backup is also created automatically before every save or settings change.</small></div>
+  <div class="setting"><label>Score Reset</label><button class="btn danger" onclick="resetAllScores()">Reset All Scores to Zero</button><small style="display:block;margin-top:6px">Sets every section in every ensemble to 0. A backup is created first.</small></div><div class="setting"><label>Achievement Metrics</label><button class="btn danger" onclick="resetAchievementMetrics()">Reset All Metrics & Badges</button><small style="display:block;margin-top:6px">Clears all badges, fire streaks, comeback tracking, best-rehearsal history, consistency history, climber progress, and daily achievement data for the current ensemble. Scores are not changed.</small></div><div class="setting"><label>Data Safety</label><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" onclick="makeManualBackup()">Create Backup</button><button class="btn" onclick="restorePreviousBackup()">Restore Previous Backup</button></div><small style="display:block;margin-top:6px">A backup is also created automatically before every save or settings change.</small></div>
 </div></div>
 
 <div id="trends" class="modal"><div class="panel">
@@ -389,10 +389,37 @@ function renderManage(){
 function renameSection(i,v){state.ensembles[current][i].name=v.trim()||state.ensembles[current][i].name;persist();renderManage();render()}
 function deleteSection(i){if(confirm('Remove this section?')){state.ensembles[current].splice(i,1);persist();renderManage();render()}}
 function addSection(){const n=prompt('New section name');if(!n)return;state.ensembles[current].push(initSection({name:n.trim(),score:0}));persist();renderManage();render()}
+function resetAllScores(){
+ if(!confirm('Reset ALL section scores in ALL ensembles to 0? A backup will be created first.'))return;
+ makeManualBackup();
+ Object.values(state.ensembles).forEach(arr=>arr.forEach(s=>{s.score=0}));
+ pending={};stageStats={};celebrationQueue=[];editMode=false;lastOrder=[];
+ persist();render();
+ alert('All section scores in all ensembles were reset to 0.');
+}
 function resetAchievementMetrics(){
- if(!confirm('Reset achievement metrics for '+current+'? Scores and collected badges will stay the same.'))return;
- state.ensembles[current].forEach(s=>{s.today=0;s.positiveToday=0;s.minusToday=0;s.fireDays=0;s.bestDailyPositive=0;s.recentPositiveDays=[];s.achievement='';s.bestCelebratedDate='';s.savedLossDebt=0;s.climberEvents=0});
- state.lastDailyReset=todayKey();persist();render();alert('Achievement metrics reset. Scores and badges were not changed.');
+ if(!confirm('Clear ALL achievement metrics and badges for '+current+'? Section scores will stay the same.'))return;
+ makeManualBackup();
+ state.ensembles[current].forEach(s=>{
+   s.today=0;
+   s.positiveToday=0;
+   s.minusToday=0;
+   s.fireDays=0;
+   s.bestDailyPositive=0;
+   s.recentPositiveDays=[];
+   s.achievement='';
+   s.bestCelebratedDate='';
+   s.savedLossDebt=0;
+   s.climberEvents=0;
+   s.badges=[];
+ });
+ state.lastDailyReset=todayKey();
+ celebrationQueue=[];
+ pending={};
+ stageStats={};
+ persist();
+ render();
+ alert('All achievement metrics and badges were cleared for '+current+'. Scores were not changed.');
 }
 function showTrends(){
  ensureDailyReset();
