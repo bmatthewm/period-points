@@ -204,7 +204,7 @@ function delta(n){return pending[k(n)]||0}
 function stats(n){return stageStats[k(n)]||{plus:0,minus:0,plusValue:0,minusValue:0}}
 function ranked(){return [...state.ensembles[current]].sort((a,b)=>b.score-a.score||a.name.localeCompare(b.name))}
 function rankMap(){const m={};ranked().forEach((s,i)=>m[s.name]=i+1);return m}
-function isTeacher(s){return String(s?.name||'').trim().toLowerCase()==='mr.mcardell'}
+function isTeacher(s){const n=String(s?.name||'').toLowerCase().replace(/[^a-z]/g,'');return n==='mrmcardell'}
 function teacherSection(){return state.ensembles[current].find(isTeacher)||null}
 function challengeRows(){
  const teacher=teacherSection();
@@ -229,7 +229,7 @@ function render(){
  ensureDailyReset();
  document.getElementById('ensembleBtn').textContent=current;
  document.getElementById('editSaveBtn').textContent=editMode?'Save':'Edit';
- document.getElementById('note').textContent=editMode?'Cards are locked to your instrument order while you score.':'Press Edit to lock cards into your instrument order for scoring.';
+ const teacherFound=!!teacherSection();document.getElementById('note').textContent=editMode?'Cards are locked to your instrument order while you score.':(state.displayStyle==='challenge'&&!teacherFound?'Challenge Mode: add Mr. McArdell to this ensemble in Settings.':'Press Edit to lock cards into your instrument order for scoring.');
  const b=document.getElementById('board'),r=displayRows(),ranks=rankMap();
  b.classList.toggle('challengeMode',state.displayStyle==='challenge'&&!editMode);
  b.innerHTML='';
