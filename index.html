@@ -15,7 +15,7 @@ button,input,select{font:inherit}.btn{border:1px solid var(--line);background:#f
 .btn.primary{background:var(--blue);border-color:var(--blue);color:#fff}.ensembleBtn{min-width:136px;text-align:center}
 .board{display:grid;gap:5px;flex:1;min-height:0;grid-auto-rows:minmax(0,1fr)}
 .row{display:grid;grid-template-columns:36px minmax(0,1fr) 64px 76px;gap:7px;align-items:center;min-height:0;background:#fff;border:1px solid var(--line);border-radius:11px;padding:4px 9px;box-shadow:var(--shadow);transition:transform .45s ease,box-shadow .45s ease,background .2s ease;overflow:hidden}
-.row.editing{background:#fbfdff;border-color:#cbd5e1}.row.bump{transform:scale(1.012);box-shadow:0 13px 30px rgba(37,99,235,.16)}
+.row.editing{background:#fbfdff;border-color:#cbd5e1}.row.bump{transform:scale(1.012);box-shadow:0 13px 30px rgba(37,99,235,.16)}.row.teacherCard{background:#eaf2ff;border:2px solid #7aa7f7;box-shadow:0 8px 20px rgba(37,99,235,.12)}.row.teacherCard .name{color:#174ea6}.row.teacherCard.teacherGap{margin:5px 0}.challengeMode .rank{color:transparent}
 .rank{font-size:17px;font-weight:900;text-align:center}.editrank{color:#98a2b3}
 .section{display:flex;align-items:center;gap:6px;min-width:0;overflow:hidden}.name{font-size:15px;font-weight:850;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .tag,.fire,.badgecount{font-size:9px;white-space:nowrap;border-radius:999px;padding:2px 6px}.tag{background:#fff7d6;color:#8a6100}.fire{color:#b54708;font-weight:900}.badgecount{background:#f2f4f7;color:#475467;font-weight:850}.badgeStrip{display:flex;align-items:center;gap:5px;white-space:nowrap}.badgeIcon{font-size:17px;line-height:1;filter:grayscale(1);opacity:.18}.badgeIcon.earned{filter:none;opacity:1}
@@ -84,6 +84,7 @@ input[type=text],select{width:100%;padding:9px 10px;border:1px solid var(--line)
 
 <div id="settings" class="modal"><div class="panel">
   <div class="panelhead"><h2>Settings</h2><button class="btn" onclick="closeSettings()">Done</button></div>
+  <div class="setting"><label>Display Style</label><select id="displayStyle" onchange="changeDisplayStyle(this.value)"><option value="original">Original Rankings</option><option value="challenge">Mr. McArdell Challenge</option></select><small style="display:block;margin-top:6px">Switch between the original ranked board and the Mr. McArdell benchmark style.</small></div>
   <div class="setting"><label>Manage Ensemble</label><input id="ensembleName" type="text"><small>Rename the current ensemble.</small></div>
   <div class="setting"><label>Manage Sections & Instrument Order</label><small>Drag the ☰ handle to set the fixed order used during Edit Mode.</small><div id="manageSections" class="manage"></div><button class="btn" style="margin-top:9px" onclick="addSection()">+ Add Section</button></div>
   <div class="setting"><label>Score Reset</label><button class="btn danger" onclick="resetAllScores()">Reset All Scores to Zero</button><small style="display:block;margin-top:6px">Sets every section in every ensemble to 0. A backup is created first.</small></div><div class="setting"><label>Achievement Metrics</label><button class="btn danger" onclick="resetAchievementMetrics()">Reset All Metrics & Badges</button><small style="display:block;margin-top:6px">Clears all badges, fire streaks, comeback tracking, best-rehearsal history, consistency history, climber progress, and daily achievement data for the current ensemble. Scores are not changed.</small></div><div class="setting"><label>Data Safety</label><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" onclick="makeManualBackup()">Create Backup</button><button class="btn" onclick="restorePreviousBackup()">Restore Previous Backup</button></div><small style="display:block;margin-top:6px">A backup is also created automatically before every save or settings change.</small></div>
@@ -135,6 +136,7 @@ function loadStateSafely(){
 }
 let state=loadStateSafely();
 if(!state.ensembles||!Object.keys(state.ensembles).length)state={ensembles:fallback,archives:[],lastDailyReset:null};
+if(!state.displayStyle)state.displayStyle='original';
 let current=Object.keys(state.ensembles)[0],editMode=false,pending={},stageStats={},celebrationQueue=[],lastOrder=[];
 function backupCurrent(){
  const raw=localStorage.getItem(STORAGE);
@@ -183,9 +185,10 @@ function ensureDailyReset(){
  const key=todayKey();if(!state.lastDailyReset){state.lastDailyReset=key;persist();return}
  if(state.lastDailyReset===key)return;
  Object.values(state.ensembles).forEach(arr=>{
-   const ensembleHadActivity=arr.some(s=>(s.positiveToday||0)>0||(s.minusToday||0)>0);
+   const ensembleHadActivity=arr.some(s=>!isTeacher(s)&&((s.positiveToday||0)>0||(s.minusToday||0)>0));
    if(ensembleHadActivity){
      arr.forEach(s=>{
+       if(isTeacher(s))return;
        const cleanPositive=(s.positiveToday||0)>0&&(s.minusToday||0)===0;
        s.recentPositiveDays.push(cleanPositive);if(s.recentPositiveDays.length>7)s.recentPositiveDays=s.recentPositiveDays.slice(-7);
        s.fireDays=cleanPositive?(s.fireDays||0)+1:0;
@@ -198,28 +201,45 @@ function ensureDailyReset(){
 }
 function k(n){return current+'::'+n}
 function delta(n){return pending[k(n)]||0}
-function stats(n){return stageStats[k(n)]||{plus:0,minus:0}}
+function stats(n){return stageStats[k(n)]||{plus:0,minus:0,plusValue:0,minusValue:0}}
 function ranked(){return [...state.ensembles[current]].sort((a,b)=>b.score-a.score||a.name.localeCompare(b.name))}
 function rankMap(){const m={};ranked().forEach((s,i)=>m[s.name]=i+1);return m}
+function isTeacher(s){return String(s?.name||'').trim().toLowerCase()==='mr.mcardell'}
+function teacherSection(){return state.ensembles[current].find(isTeacher)||null}
+function challengeRows(){
+ const teacher=teacherSection();
+ if(!teacher)return ranked();
+ const others=state.ensembles[current].filter(s=>!isTeacher(s));
+ const above=others.filter(s=>s.score>=teacher.score).sort((a,b)=>b.score-a.score||a.name.localeCompare(b.name));
+ const below=others.filter(s=>s.score<teacher.score).sort((a,b)=>b.score-a.score||a.name.localeCompare(b.name));
+ return [...above,teacher,...below];
+}
+function editRows(){
+ const teacher=teacherSection();
+ const others=state.ensembles[current].filter(s=>!isTeacher(s));
+ return teacher?[teacher,...others]:others;
+}
 function badgeStrip(s){
  const defs=[['fire','🔥'],['comeback','💪'],['best','⭐'],['climber','🚀'],['consistent','🎵']];
  return '<div class="badgeStrip">'+defs.map(d=>'<span class="badgeIcon '+(s.badges.includes(d[0])?'earned':'')+'">'+d[1]+'</span>').join('')+'</div>';
 }
 function hasPending(){return state.ensembles[current].some(s=>{const st=stats(s.name);return delta(s.name)!==0||st.plus||st.minus})}
-function displayRows(){return editMode?[...state.ensembles[current]]:ranked()}
+function displayRows(){if(editMode)return state.displayStyle==='challenge'?editRows():[...state.ensembles[current]];return state.displayStyle==='challenge'?challengeRows():ranked()}
 function render(){
  ensureDailyReset();
  document.getElementById('ensembleBtn').textContent=current;
  document.getElementById('editSaveBtn').textContent=editMode?'Save':'Edit';
  document.getElementById('note').textContent=editMode?'Cards are locked to your instrument order while you score.':'Press Edit to lock cards into your instrument order for scoring.';
  const b=document.getElementById('board'),r=displayRows(),ranks=rankMap();
+ b.classList.toggle('challengeMode',state.displayStyle==='challenge'&&!editMode);
  b.innerHTML='';
- b.style.gridTemplateRows='repeat('+Math.max(r.length,1)+',minmax(0,1fr))';
+ b.style.gridTemplateRows=state.displayStyle==='challenge'&&!editMode?'repeat('+Math.max(r.length,1)+',minmax(0,1fr))':'repeat('+Math.max(r.length,1)+',minmax(0,1fr))';
 
  r.forEach((s,i)=>{
    initSection(s);
    const dd=delta(s.name),shown=Math.max(0,s.score+dd),el=document.createElement('div');
-   el.className='row'+(editMode?' editing':'');
+   const teacher=isTeacher(s);
+   el.className='row'+(editMode?' editing':'')+(teacher?' teacherCard':'')+(teacher&&state.displayStyle==='challenge'&&!editMode?' teacherGap':'');
    el.dataset.name=s.name;
 
    const cleanToday=s.positiveToday>0&&s.minusToday===0;
@@ -227,7 +247,7 @@ function render(){
 
    const rank=document.createElement('div');
    rank.className='rank '+(editMode?'editrank':'');
-   rank.textContent=editMode?'•':ranks[s.name];
+   rank.textContent=editMode?'•':(state.displayStyle==='challenge'?'':ranks[s.name]);
 
    const section=document.createElement('div');
    section.className='section';
@@ -236,21 +256,23 @@ function render(){
    name.className='name';
    name.textContent=s.name;
    section.appendChild(name);
+   if(teacher&&state.displayStyle==='challenge'){const t=document.createElement('div');t.className='tag';t.textContent='CHALLENGE';section.appendChild(t)}
 
-   if(s.achievement){
+   if(!teacher&&s.achievement){
      const tag=document.createElement('div');
      tag.className='tag';
      tag.textContent=s.achievement;
      section.appendChild(tag);
    }
 
-   if(effectiveFire>=2){
+   if(!teacher&&effectiveFire>=2){
      const fire=document.createElement('div');
      fire.className='fire';
      fire.textContent='🔥 '+effectiveFire+' days';
      section.appendChild(fire);
    }
 
+   if(!teacher){
    const badgeWrap=document.createElement('div');
    badgeWrap.innerHTML=badgeStrip(s);
    if(badgeWrap.firstChild)section.appendChild(badgeWrap.firstChild);
@@ -259,6 +281,7 @@ function render(){
    badgeCount.className='badgecount';
    badgeCount.textContent=s.badges.length+'/5 badges';
    section.appendChild(badgeCount);
+   }
 
    const scorebox=document.createElement('div');
    scorebox.className='scorebox';
@@ -285,9 +308,9 @@ function render(){
 
    const plus=document.createElement('button');
    plus.className='scorebtn plus';
-   plus.textContent='+';
+   plus.textContent=teacher?'+½':'+';
    plus.disabled=!editMode;
-   plus.addEventListener('click',()=>stage(s.name,1));
+   plus.addEventListener('click',()=>stage(s.name,teacher?0.5:1));
 
    controls.appendChild(minus);
    controls.appendChild(plus);
@@ -323,8 +346,8 @@ function cycleEnsemble(){
 }
 function stage(name,amt){
  if(!editMode)return;const s=state.ensembles[current].find(x=>x.name===name),key=k(name);
- pending[key]=(pending[key]||0)+amt;stageStats[key]=stageStats[key]||{plus:0,minus:0};
- if(amt>0)stageStats[key].plus++;else stageStats[key].minus++;
+ pending[key]=(pending[key]||0)+amt;stageStats[key]=stageStats[key]||{plus:0,minus:0,plusValue:0,minusValue:0};
+ if(amt>0){stageStats[key].plus++;stageStats[key].plusValue+=amt}else{stageStats[key].minus++;stageStats[key].minusValue+=Math.abs(amt)};
  if(s.score+pending[key]<0)pending[key]=-s.score;render();
 }
 function award(s,id){if(s.badges.includes(id))return false;s.badges.push(id);return true}
@@ -386,11 +409,11 @@ function saveChanges(){
  ensureDailyReset();
  const before=rankMap(),changes=[];
  state.ensembles[current].forEach(s=>{
-   const key=k(s.name),dd=pending[key]||0,st=stageStats[key]||{plus:0,minus:0};
+   const key=k(s.name),dd=pending[key]||0,st=stageStats[key]||{plus:0,minus:0,plusValue:0,minusValue:0};
    if(!dd&&!st.plus&&!st.minus)return;
    s.score=Math.max(0,s.score+dd);changes.push({s,dd,st});
  });
- pending={};stageStats={};const after=rankMap();changes.forEach(x=>evaluate(x.s,before[x.s.name],after[x.s.name],x.dd,x.st));
+ pending={};stageStats={};const after=rankMap();changes.forEach(x=>{if(!isTeacher(x.s))evaluate(x.s,before[x.s.name],after[x.s.name],x.dd,x.st)});
  persist();editMode=false;lastOrder=state.ensembles[current].map(s=>s.name);render();setTimeout(playNextCelebration,700);
 }
 function playNextCelebration(){
@@ -402,7 +425,8 @@ function playNextCelebration(){
  document.getElementById('celebrate').classList.add('open');
 }
 function closeCelebrate(){document.getElementById('celebrate').classList.remove('open');setTimeout(playNextCelebration,170)}
-function openSettings(){document.getElementById('ensembleName').value=current;renderManage();document.getElementById('settings').classList.add('open')}
+function openSettings(){document.getElementById('ensembleName').value=current;document.getElementById('displayStyle').value=state.displayStyle||'original';renderManage();document.getElementById('settings').classList.add('open')}
+function changeDisplayStyle(value){state.displayStyle=value==='challenge'?'challenge':'original';persist();render()}
 function closeSettings(){const n=document.getElementById('ensembleName').value.trim();if(n&&n!==current){state.ensembles[n]=state.ensembles[current];delete state.ensembles[current];current=n}persist();render();document.getElementById('settings').classList.remove('open')}
 function renderManage(){
  const c=document.getElementById('manageSections');c.innerHTML='';
@@ -460,7 +484,7 @@ function showTrends(){
   ['consistent','🎵','Consistency','5 of 6 earns daily recognition; 6 of 7 rehearsal days earns the season badge']
  ];
  let h='<div style="margin-bottom:12px;color:#667085;font-size:13px"><strong>Daily metrics reset at midnight.</strong> Season badges are intentionally harder and stay collected.</div>';
- ranked().forEach(s=>{const icons=defs.map(d=>'<span title="'+d[2]+'" style="opacity:'+(s.badges.includes(d[0])?'1':'.18')+';font-size:26px;margin-right:8px">'+d[1]+'</span>').join('');
+ ranked().filter(s=>!isTeacher(s)).forEach(s=>{const icons=defs.map(d=>'<span title="'+d[2]+'" style="opacity:'+(s.badges.includes(d[0])?'1':'.18')+';font-size:26px;margin-right:8px">'+d[1]+'</span>').join('');
    h+='<div style="padding:11px;border:1px solid #dbe3ee;border-radius:12px;margin-bottom:8px"><div style="display:flex;justify-content:space-between;gap:10px"><strong>'+s.name+'</strong><strong>'+s.score+'</strong></div><div style="margin-top:7px">'+icons+' <span style="font-size:11px;color:#667085">'+s.badges.length+'/5 collected</span></div></div>';
  });
  h+='<div style="margin-top:14px;padding:14px;border-radius:14px;background:#fff7d6"><strong>Badge Rules</strong><br>'+defs.map(d=>d[1]+' <strong>'+d[2]+'</strong> — '+d[3]).join('<br>')+'</div>';
